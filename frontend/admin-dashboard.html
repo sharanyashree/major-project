@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Ration Distribution System</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="admin-dashboard.css">
+</head>
+<body>
+  <div class="admin-app-container">
+    <!-- ========================================================================= -->
+    <!-- SIDEBAR NAVIGATION -->
+    <!-- ========================================================================= -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">Ration Distribution System</span>
+          <span class="brand-badge">Govt Admin</span>
+        </div>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul class="nav-list">
+          <li class="nav-item active" data-target="dashboard">
+            <a href="#dashboard" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="distributors">
+            <a href="#distributors" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+                <path d="M9 9h1"/>
+                <path d="M9 13h1"/>
+                <path d="M9 17h1"/>
+              </svg>
+              <span class="nav-label">Distributor Management</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="inventory">
+            <a href="#inventory" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span class="nav-label">Warehouse Stock (Rice & Oil)</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="dispatch">
+            <a href="#dispatch" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              <span class="nav-label">Dispatch Management</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="reports">
+            <a href="#reports" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+              <span class="nav-label">Reports</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="notifications">
+            <a href="#notifications" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span class="nav-label">Notifications</span>
+              <span class="nav-badge" id="navNotifBadge">3</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="settings">
+            <a href="#settings" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span class="nav-label">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+         
+          <div class="user-details">
+            <span class="user-name">Govt. Admin</span>
+          
+          </div>
+        </div>
+        <button class="logout-btn" id="sidebarLogoutBtn" title="Logout Session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Overlay backdrop for mobile sidebar -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- ========================================================================= -->
+    <!-- MAIN WRAPPER & TOP NAVBAR -->
+    <!-- ========================================================================= -->
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Mobile Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="page-title-group">
+            <h1 class="page-title" id="pageTitle">Dashboard Overview</h1>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <!-- Date & Time Badge -->
+          <div class="date-display" id="dateDisplay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+           
+          </div>
+
+          <!-- Notification Menu Button -->
+          <div class="top-notif-wrapper">
+            <button class="notif-btn" id="topNotifBtn" title="System Notifications">
+              <span style="font-size: 1.1rem; margin-right: 2px;">🔔</span>
+              <span class="notif-badge-count" id="adminNotifBellCount">3</span>
+            </button>
+            
+            <!-- Quick Notification Dropdown -->
+            <div class="notif-dropdown hidden" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <h4>System Notifications</h4>
+                <span class="badge badge-primary" id="notifDropdownBadge">0 New</span>
+              </div>
+              <div class="notif-list" id="notifDropdownList">
+                <!-- Dynamically populated via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Profile Pill -->
+          <div class="profile-dropdown-wrapper">
+            <button class="profile-btn" id="profileBtn">
+              <div class="profile-avatar">GA</div>
+              <div class="profile-meta">
+                <span class="profile-name">Govt Admin</span>
+                <span class="profile-role">Super Administrator</span>
+              </div>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <div class="profile-menu hidden" id="profileMenu">
+              <div class="profile-menu-header">
+                <p class="user-fullname">State PDS Director</p>
+                <p class="user-email">admin.pds@gov.in</p>
+              </div>
+              <hr class="menu-divider">
+              <a href="#settings" class="menu-item nav-trigger" data-target="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Admin Settings</span>
+              </a>
+              <button class="menu-item text-danger" id="dropdownLogoutBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Toast Alert Box -->
+      <div class="toast-alert hidden" id="toastAlert">
+        <span class="toast-icon" id="toastIcon">ℹ️</span>
+        <span class="toast-msg" id="toastMsg">Action executed successfully.</span>
+        <button class="toast-close" id="toastCloseBtn">&times;</button>
+      </div>
+
+      <!-- MAIN CONTENT SECTIONS -->
+      <main class="main-content">
+
+        <!-- =================================================================== -->
+        <!-- SECTION 1: DASHBOARD OVERVIEW -->
+        <!-- =================================================================== -->
+        <section class="content-section active" id="dashboardSection">
+          <!-- System Welcome Banner -->
+         
+
+          <!-- OVERVIEW CARDS GRID (Essential Summary: 4 Cards) -->
+          <div class="metrics-grid">
+            <!-- Card 1: Total Distributors -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Total Distributors</span>
+                <div class="stat-icon icon-blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 21h18"/>
+                    <path d="M5 21V7l8-4v18"/>
+                    <path d="M19 21V11l-6-4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statDistributorsCount">248</div>
+              <div class="stat-footer">
+                <span class="trend positive">Active FPS Licenses</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Rice Stock -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Rice Stock</span>
+                <div class="stat-icon icon-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statRiceStock">45,200 <span class="unit">Qtl</span></div>
+              <div class="stat-footer">
+                <span class="trend positive">Optimal Level</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Edible Oil Stock -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Edible Oil Stock</span>
+                <div class="stat-icon icon-cyan">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statOilStock">8,600 <span class="unit">Ltr</span></div>
+              <div class="stat-footer">
+                <span class="trend positive">Stable</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Monthly Dispatches -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Monthly Dispatches</span>
+                <div class="stat-icon icon-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"/>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value">1,420 <span class="unit">MT</span></div>
+              <div class="stat-footer">
+                <span class="trend positive">August Allocation</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD SECONDARY PANELS -->
+          <div class="dashboard-panels-grid">
+            <!-- Recent Dispatches Overview -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Stock Dispatches</h3>
+                  <p class="card-subtitle">Real-time ledger of allocations dispatched to FPS shops</p>
+                </div>
+                <button class="btn btn-outline btn-sm nav-trigger" data-target="dispatch">View All Dispatches</button>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Dispatch ID</th>
+                      <th>Distributor Name</th>
+                      <th>FPS Code</th>
+                      <th>Commodity</th>
+                      <th>Quantity</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentDispatchesTableBody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- System Activity & Warehouse Quick Status -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Central Depot Status</h3>
+                <p class="card-subtitle">Depot capacity and reserve levels</p>
+              </div>
+              <div class="depot-summary-list">
+                <div class="depot-item">
+                  <div class="depot-info">
+                    <span class="depot-name">Bangalore North Depot #1</span>
+                    <span class="depot-capacity">Capacity: 15,000 MT</span>
+                  </div>
+                  <div class="progress-bar-wrapper">
+                    <div class="progress-bar bg-primary" style="width: 88%;"></div>
+                  </div>
+                  <span class="depot-percentage">88% Full</span>
+                </div>
+
+                <div class="depot-item">
+                  <div class="depot-info">
+                    <span class="depot-name">Mysore Central Grain Silo</span>
+                    <span class="depot-capacity">Capacity: 20,000 MT</span>
+                  </div>
+                  <div class="progress-bar-wrapper">
+                    <div class="progress-bar bg-success" style="width: 76%;"></div>
+                  </div>
+                  <span class="depot-percentage">76% Full</span>
+                </div>
+
+                <div class="depot-item">
+                  <div class="depot-info">
+                    <span class="depot-name">Belagavi Stock Storage</span>
+                    <span class="depot-capacity">Capacity: 12,000 MT</span>
+                  </div>
+                  <div class="progress-bar-wrapper">
+                    <div class="progress-bar bg-amber" style="width: 42%;"></div>
+                  </div>
+                  <span class="depot-percentage text-amber">42% (Low Sugar)</span>
+                </div>
+
+                <div class="depot-item">
+                  <div class="depot-info">
+                    <span class="depot-name">Kalaburagi Regional Depot</span>
+                    <span class="depot-capacity">Capacity: 18,000 MT</span>
+                  </div>
+                  <div class="progress-bar-wrapper">
+                    <div class="progress-bar bg-primary" style="width: 91%;"></div>
+                  </div>
+                  <span class="depot-percentage">91% Full</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 2: DISTRIBUTOR MANAGEMENT -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="distributorsSection">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h2 class="card-title">Authorized FPS Distributors</h2>
+                <p class="card-subtitle">Manage, search and monitor licensed Fair Price Shop owners across all districts</p>
+              </div>
+              <button class="btn btn-primary" id="openAddDistributorModalBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>Add Distributor</span>
+              </button>
+            </div>
+
+            <!-- Toolbar & Filters -->
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="distributorSearchInput" placeholder="Search by Distributor ID, Licensee Name, or FPS Code...">
+              </div>
+
+              <div class="filter-group">
+                <select id="districtFilterSelect" class="form-select">
+                  <option value="ALL">All Districts</option>
+                  <option value="Bangalore Urban">Bangalore Urban</option>
+                  <option value="Bangalore Rural">Bangalore Rural</option>
+                  <option value="Mysore">Mysore</option>
+                  <option value="Belagavi">Belagavi</option>
+                  <option value="Kalaburagi">Kalaburagi</option>
+                  <option value="Mangalore">Mangalore</option>
+                </select>
+
+                <select id="statusFilterSelect" class="form-select">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending Approval</option>
+                  <option value="Inactive">Inactive / Suspended</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Distributors Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Distributor ID</th>
+                    <th>Licensee Name</th>
+                    <th>FPS Code</th>
+                    <th>District</th>
+                    <th>Taluk</th>
+                    <th>Mobile</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="distributorsTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-footer">
+              <span class="results-count" id="distributorsCountText">Showing 0 of 0 distributors</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 3: WAREHOUSE INVENTORY -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="inventorySection">
+          <div class="section-intro">
+            <h2>Central Warehouse Reserve Stock</h2>
+            <p>Live inventory tracking of essential PDS commodities stored in State Depots</p>
+          </div>
+
+          <!-- COMMODITY CARDS GRID (Rice & Oil Only) -->
+          <div class="commodity-cards-grid">
+            <!-- Commodity 1: Rice -->
+            <div class="commodity-card">
+              <div class="commodity-header">
+                <div class="commodity-badge badge-primary">PDS Staple</div>
+                <button class="btn btn-sm btn-outline restock-btn" data-commodity="Rice">Restock Entry</button>
+              </div>
+              <h3 class="commodity-name">Grade-A Fine Rice</h3>
+              <div class="commodity-stock">
+                <span class="stock-num" id="invRiceVal">45,200</span>
+                <span class="stock-unit">Quintals</span>
+              </div>
+              <div class="stock-progress-group">
+                <div class="progress-labels">
+                  <span>Reserved Quota: 40,000 Qtl</span>
+                  <span class="text-success font-semibold">92% Optimal</span>
+                </div>
+                <div class="progress-bar-wrapper">
+                  <div class="progress-bar bg-success" style="width: 92%;"></div>
+                </div>
+              </div>
+              <div class="commodity-footer">
+                <span>Last Updated: Today 08:30 AM</span>
+                <span class="badge badge-success">Optimal Level</span>
+              </div>
+            </div>
+
+            <!-- Commodity 2: Edible Oil -->
+            <div class="commodity-card">
+              <div class="commodity-header">
+                <div class="commodity-badge badge-info">Fortified Oil</div>
+                <button class="btn btn-sm btn-outline restock-btn" data-commodity="Edible Oil">Restock Entry</button>
+              </div>
+              <h3 class="commodity-name">Fortified Sunflower Oil</h3>
+              <div class="commodity-stock">
+                <span class="stock-num" id="invOilVal">8,600</span>
+                <span class="stock-unit">Litres</span>
+              </div>
+              <div class="stock-progress-group">
+                <div class="progress-labels">
+                  <span>Reserved Quota: 8,000 Ltr</span>
+                  <span class="text-success font-semibold">88% Stable</span>
+                </div>
+                <div class="progress-bar-wrapper">
+                  <div class="progress-bar bg-primary" style="width: 88%;"></div>
+                </div>
+              </div>
+              <div class="commodity-footer">
+                <span>Last Updated: Today 07:45 AM</span>
+                <span class="badge badge-success">Optimal Level</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Central Depot Breakdown Table -->
+          <div class="card margin-top">
+            <div class="card-header">
+              <h3 class="card-title">Central Depots Capacity & Reserve Ledger</h3>
+              <p class="card-subtitle">District-wise storage distribution in Government silos</p>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Depot Name</th>
+                    <th>District</th>
+                    <th>Main Commodities Stored</th>
+                    <th>Total Capacity</th>
+                    <th>Current Reserve</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Central Silo #1</strong></td>
+                    <td>Bangalore Urban</td>
+                    <td>Rice, Wheat, Sugar, Oil</td>
+                    <td>25,000 MT</td>
+                    <td>21,800 MT (87%)</td>
+                    <td><span class="badge badge-success">Optimal</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Mysore Food Storage Depot</strong></td>
+                    <td>Mysore</td>
+                    <td>Rice, Wheat</td>
+                    <td>18,000 MT</td>
+                    <td>14,500 MT (80%)</td>
+                    <td><span class="badge badge-success">Optimal</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Belagavi Warehouse #3</strong></td>
+                    <td>Belagavi</td>
+                    <td>Rice, Sugar, Oil</td>
+                    <td>15,000 MT</td>
+                    <td>8,200 MT (54%)</td>
+                    <td><span class="badge badge-warning">Low Sugar Stock</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Kalaburagi Grain Reserve</strong></td>
+                    <td>Kalaburagi</td>
+                    <td>Wheat, Rice</td>
+                    <td>20,000 MT</td>
+                    <td>18,200 MT (91%)</td>
+                    <td><span class="badge badge-success">Optimal</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 4: DISPATCH MANAGEMENT -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="dispatchSection">
+          <div class="dispatch-layout-grid">
+            <!-- Left: New Dispatch Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Dispatch Stock to FPS Shop</h3>
+                <p class="card-subtitle">Authorize stock shipment from Central Warehouse to licensed distributor</p>
+              </div>
+
+              <form id="dispatchForm" class="form-grid">
+                <div class="form-group full-width">
+                  <label for="dispatchDistributorSelect" class="form-label">Select Authorized Distributor *</label>
+                  <select id="dispatchDistributorSelect" class="form-select" required>
+                    <option value="">-- Choose FPS Distributor --</option>
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="dispatchCommoditySelect" class="form-label">Commodity *</label>
+                  <select id="dispatchCommoditySelect" class="form-select" required>
+                    <option value="Rice">Rice (Grade A)</option>
+                    <option value="Edible Oil">Edible Oil (Litres)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="dispatchQuantityInput" class="form-label">Quantity *</label>
+                  <input type="number" id="dispatchQuantityInput" class="form-input" placeholder="e.g. 50" min="1" max="1000" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="dispatchDateInput" class="form-label">Dispatch Date *</label>
+                  <input type="date" id="dispatchDateInput" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="dispatchStatusSelect" class="form-label">Dispatch Status *</label>
+                  <select id="dispatchStatusSelect" class="form-select" required>
+                    <option value="Dispatched">Dispatched (In Transit)</option>
+                    <option value="Delivered">Delivered & Verified</option>
+                    <option value="Pending">Pending Shipment</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="dispatchVehicleInput" class="form-label">Vehicle Registration Number</label>
+                  <input type="text" id="dispatchVehicleInput" class="form-input" placeholder="e.g. KA-01-GA-9842" uppercase>
+                </div>
+
+                <div class="form-actions full-width">
+                  <button type="submit" class="btn btn-primary" id="dispatchSubmitBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="22" y1="2" x2="11" y2="13"/>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                    <span>Dispatch Stock</span>
+                  </button>
+                  <button type="reset" class="btn btn-outline" id="dispatchResetBtn">Reset</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Quick Dispatch Summary Cards -->
+            <div class="dispatch-summary-column">
+              <div class="stat-card">
+                <div class="stat-header">
+                  <span class="stat-title">Dispatches Today</span>
+                  <span class="stat-icon icon-blue">🚚</span>
+                </div>
+                <div class="stat-value" id="todayDispatchCount">14</div>
+                <div class="stat-footer">
+                  <span class="trend positive">Active Shipments</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-header">
+                  <span class="stat-title">Stock Delivered</span>
+                  <span class="stat-icon icon-emerald">📦</span>
+                </div>
+                <div class="stat-value">680 <span class="unit">Qtl</span></div>
+                <div class="stat-footer">
+                  <span class="trend positive">Fulfill Rate 98.4%</span>
+                </div>
+              </div>
+
+              <div class="card info-alert-card">
+                <div class="info-alert-header">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <h4>Government Dispatch Protocol</h4>
+                </div>
+                <p>Every commodity dispatch creates a digitally signed Stock Allocation Pass for the FPS Distributor. Ensure vehicle numbers match state transport manifest.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dispatch History Table -->
+          <div class="card margin-top">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">Dispatch History & Stock Ledger</h3>
+                <p class="card-subtitle">Complete log of commodity allocations dispatched to Fair Price Shops</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="exportDispatchBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export Dispatch Log</span>
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Dispatch ID</th>
+                    <th>Distributor Name</th>
+                    <th>FPS Code</th>
+                    <th>Commodity</th>
+                    <th>Quantity</th>
+                    <th>Dispatch Date</th>
+                    <th>Vehicle No</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="fullDispatchTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 5: REPORTS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="reportsSection">
+          <div class="section-intro">
+            <h2>System Analytics & Reports</h2>
+            <p>Official Public Distribution System stock summaries and district-wise performance records</p>
+          </div>
+
+          <div class="reports-grid">
+            <!-- Report Card 1: Monthly Distribution Summary -->
+            <div class="card">
+              <div class="card-header flex-header">
+                <div>
+                  <h3 class="card-title">Monthly Allocation & Distribution Summary</h3>
+                  <p class="card-subtitle">August 2026 Grain Distribution Overview</p>
+                </div>
+                <span class="badge badge-primary">August 2026</span>
+              </div>
+              <div class="report-summary-metrics">
+                <div class="report-metric">
+                  <span class="m-label">Total Allocated</span>
+                  <span class="m-value">1,500 MT</span>
+                </div>
+                <div class="report-metric">
+                  <span class="m-label">Dispatched to FPS</span>
+                  <span class="m-value text-primary">1,420 MT</span>
+                </div>
+                <div class="report-metric">
+                  <span class="m-label">Fulfillment Rate</span>
+                  <span class="m-value text-success">94.6%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Report Card 2: Inventory Summary -->
+            <div class="card">
+              <div class="card-header flex-header">
+                <div>
+                  <h3 class="card-title">State Central Reserve Summary</h3>
+                  <p class="card-subtitle">Total food grains held across 18 State Depots</p>
+                </div>
+                <span class="badge badge-success">Optimal Level</span>
+              </div>
+              <div class="report-summary-metrics">
+                <div class="report-metric">
+                  <span class="m-label">Rice Reserve</span>
+                  <span class="m-value">45,200 Qtl</span>
+                </div>
+                <div class="report-metric">
+                  <span class="m-label">Wheat Reserve</span>
+                  <span class="m-value">32,800 Qtl</span>
+                </div>
+                <div class="report-metric">
+                  <span class="m-label">Sugar Reserve</span>
+                  <span class="m-value text-amber">12,400 Qtl</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- District-wise Distribution Table -->
+          <div class="card margin-top">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">District-wise PDS Allocation Table</h3>
+                <p class="card-subtitle">Commodity distribution fulfillment across major administrative districts</p>
+              </div>
+              <button class="btn btn-outline btn-sm" id="exportDistrictReportBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download Report CSV</span>
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>District Name</th>
+                    <th>Active FPS Shops</th>
+                    <th>Rice Dispatched</th>
+                    <th>Wheat Dispatched</th>
+                    <th>Sugar Dispatched</th>
+                    <th>Fulfillment Rate</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Bangalore Urban</strong></td>
+                    <td>82 Shops</td>
+                    <td>14,500 Qtl</td>
+                    <td>10,200 Qtl</td>
+                    <td>3,800 Qtl</td>
+                    <td>98.2%</td>
+                    <td><span class="badge badge-success">Excellent</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Mysore</strong></td>
+                    <td>45 Shops</td>
+                    <td>8,200 Qtl</td>
+                    <td>6,100 Qtl</td>
+                    <td>2,200 Qtl</td>
+                    <td>95.4%</td>
+                    <td><span class="badge badge-success">Good</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Belagavi</strong></td>
+                    <td>52 Shops</td>
+                    <td>9,800 Qtl</td>
+                    <td>7,400 Qtl</td>
+                    <td>1,900 Qtl</td>
+                    <td>88.1%</td>
+                    <td><span class="badge badge-warning">Under Review</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Kalaburagi</strong></td>
+                    <td>38 Shops</td>
+                    <td>6,400 Qtl</td>
+                    <td>5,100 Qtl</td>
+                    <td>1,800 Qtl</td>
+                    <td>92.8%</td>
+                    <td><span class="badge badge-success">Good</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Mangalore</strong></td>
+                    <td>31 Shops</td>
+                    <td>6,300 Qtl</td>
+                    <td>4,000 Qtl</td>
+                    <td>2,700 Qtl</td>
+                    <td>96.0%</td>
+                    <td><span class="badge badge-success">Excellent</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 6: NOTIFICATIONS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="notificationsSection">
+          <!-- Interactive System Notifications Card -->
+          <div class="card margin-bottom" style="margin-bottom: 24px;">
+            <div class="card-header flex-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+              <div>
+                <h3 class="card-title">System & Event Notifications</h3>
+                <p class="card-subtitle">Real-time system alerts, distributor requests, stock status, and system maintenance logs</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-outline btn-sm" id="adminNotifMarkAllReadBtn">Mark All as Read</button>
+                <button class="btn btn-outline btn-sm text-danger" id="adminNotifClearReadBtn">Clear Read Notifications</button>
+              </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div style="display: flex; gap: 8px; margin: 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;" id="adminNotifFilterGroup">
+              <button class="notif-filter-btn active" data-filter="all">All</button>
+              <button class="notif-filter-btn" data-filter="unread">Unread</button>
+              <button class="notif-filter-btn" data-filter="read">Read</button>
+            </div>
+
+            <!-- Notification Feed List -->
+            <div class="notifications-feed-list" id="adminNotifFeedList">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <div class="notifications-layout-grid">
+            <!-- Left: Broadcast Notification Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Broadcast Official Notification</h3>
+                <p class="card-subtitle">Send administrative circulars and stock notices to all Fair Price Shop distributors</p>
+              </div>
+
+              <form id="broadcastNotifForm" class="form-grid">
+                <div class="form-group full-width">
+                  <label for="notifTitleInput" class="form-label">Notification Title *</label>
+                  <input type="text" id="notifTitleInput" class="form-input" placeholder="e.g., August Stock Allocation Schedule Released" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="notifTargetSelect" class="form-label">Target Audience *</label>
+                  <select id="notifTargetSelect" class="form-select" required>
+                    <option value="ALL">All Authorized Distributors</option>
+                    <option value="Bangalore Urban">Bangalore Urban District</option>
+                    <option value="Mysore">Mysore District</option>
+                    <option value="Belagavi">Belagavi District</option>
+                    <option value="Kalaburagi">Kalaburagi District</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="notifPrioritySelect" class="form-label">Priority Level *</label>
+                  <select id="notifPrioritySelect" class="form-select" required>
+                    <option value="Normal">Normal Notice</option>
+                    <option value="Urgent">Urgent Alert</option>
+                    <option value="Critical">Critical Circular</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="notifMessageTextarea" class="form-label">Notification Message Body *</label>
+                  <textarea id="notifMessageTextarea" class="form-textarea" rows="5" placeholder="Enter detailed announcement message for FPS licensees..." required></textarea>
+                </div>
+
+                <div class="form-actions full-width">
+                  <button type="submit" class="btn btn-primary" id="sendNotifBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="22" y1="2" x2="11" y2="13"/>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                    <span>Send Notification</span>
+                  </button>
+                  <button type="reset" class="btn btn-outline">Clear</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right: Broadcast History Log -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Recent Broadcast History</h3>
+                <p class="card-subtitle">Log of announcements sent to distributors</p>
+              </div>
+
+              <div class="broadcast-history-list" id="broadcastHistoryList">
+                <div class="broadcast-history-item">
+                  <div class="history-item-top">
+                    <span class="badge badge-primary">Normal Notice</span>
+                    <span class="history-time">01 Aug 2026, 10:00 AM</span>
+                  </div>
+                  <h4 class="history-title">August Stock Allocation Released</h4>
+                  <p class="history-body">All FPS licensees are requested to submit stock receipts for July before downloading August allocation passes.</p>
+                  <span class="history-target">Target: All Authorized Distributors</span>
+                </div>
+
+                <div class="broadcast-history-item">
+                  <div class="history-item-top">
+                    <span class="badge badge-warning">Urgent Alert</span>
+                    <span class="history-time">28 Jul 2026, 04:30 PM</span>
+                  </div>
+                  <h4 class="history-title">Sugar Replenishment Notice</h4>
+                  <p class="history-body">Belagavi district FPS owners: Additional sugar stocks are being dispatched from Central Silo #3 tomorrow morning.</p>
+                  <span class="history-target">Target: Belagavi District</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 7: SETTINGS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="settingsSection">
+          <div class="settings-grid">
+            <!-- Admin Profile Details -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Admin Profile Settings</h3>
+                <p class="card-subtitle">Department administrator credentials and contact info</p>
+              </div>
+
+              <form id="adminProfileForm" class="form-grid">
+                <div class="form-group full-width">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Dr. K. S. Rajendran" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Designation</label>
+                  <input type="text" class="form-input" value="Chief Administrative Officer" readonly>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Department</label>
+                  <input type="text" class="form-input" value="Food & Civil Supplies Department" readonly>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Official Email</label>
+                  <input type="email" class="form-input" value="admin.pds@gov.in" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  <input type="text" class="form-input" value="+91 98765 43210" required>
+                </div>
+
+                <div class="form-actions full-width">
+                  <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Change Password -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Security & Password</h3>
+                <p class="card-subtitle">Update your administrator portal password</p>
+              </div>
+
+              <form id="adminPasswordForm" class="form-grid">
+                <div class="form-group full-width">
+                  <label class="form-label">Current Password *</label>
+                  <input type="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">New Password *</label>
+                  <input type="password" class="form-input" placeholder="At least 8 characters" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Confirm New Password *</label>
+                  <input type="password" class="form-input" placeholder="Confirm new password" required>
+                </div>
+
+                <div class="form-actions full-width">
+                  <button type="submit" class="btn btn-primary">Update Password</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD / EDIT DISTRIBUTOR -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop hidden" id="distributorModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="distributorModalTitle">Add Authorized Distributor</h3>
+        <button class="modal-close-btn" id="closeDistributorModalBtn">&times;</button>
+      </div>
+
+      <form id="distributorForm">
+        <div class="modal-body form-grid">
+          <input type="hidden" id="editDistributorIndex" value="-1">
+
+          <div class="form-group">
+            <label for="modalDistributorId" class="form-label">Distributor ID *</label>
+            <input type="text" id="modalDistributorId" class="form-input" placeholder="e.g., DIST-8842" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalFullName" class="form-label">Licensee Full Name *</label>
+            <input type="text" id="modalFullName" class="form-input" placeholder="e.g., Ramesh Chandra" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalFpsCode" class="form-label">FPS Shop Code *</label>
+            <input type="text" id="modalFpsCode" class="form-input" placeholder="e.g., FPS-4201" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalFpsName" class="form-label">FPS Shop Name *</label>
+            <input type="text" id="modalFpsName" class="form-input" placeholder="e.g., Sri Annapurna Ration Store" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalDistrict" class="form-label">District *</label>
+            <select id="modalDistrict" class="form-select" required>
+              <option value="Bangalore Urban">Bangalore Urban</option>
+              <option value="Bangalore Rural">Bangalore Rural</option>
+              <option value="Mysore">Mysore</option>
+              <option value="Belagavi">Belagavi</option>
+              <option value="Kalaburagi">Kalaburagi</option>
+              <option value="Mangalore">Mangalore</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modalTaluk" class="form-label">Taluk *</label>
+            <input type="text" id="modalTaluk" class="form-input" placeholder="e.g., North Taluk" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalMobile" class="form-label">Mobile Number *</label>
+            <input type="tel" id="modalMobile" class="form-input" placeholder="e.g., 9876543210" maxlength="10" required>
+          </div>
+
+          <div class="form-group">
+            <label for="modalStatus" class="form-label">Account Status *</label>
+            <select id="modalStatus" class="form-select" required>
+              <option value="Active">Active</option>
+              <option value="Pending">Pending Approval</option>
+              <option value="Inactive">Inactive / Suspended</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelDistributorModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveDistributorBtn">Save Licensee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VIEW DISTRIBUTOR DETAILS -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop hidden" id="viewDistributorModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Distributor License Details</h3>
+        <button class="modal-close-btn" id="closeViewModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="viewModalContent">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmViewModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RESTOCK ENTRY -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop hidden" id="restockModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Warehouse Stock Replenishment Entry</h3>
+        <button class="modal-close-btn" id="closeRestockModalBtn">&times;</button>
+      </div>
+      <form id="restockForm">
+        <div class="modal-body form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">Commodity *</label>
+            <input type="text" id="restockCommodityInput" class="form-input" readonly>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quantity to Add *</label>
+            <input type="number" id="restockAmountInput" class="form-input" placeholder="e.g., 500" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Depot Source *</label>
+            <select class="form-select" required>
+              <option value="Depot 1">Central Silo #1 (Bangalore)</option>
+              <option value="Depot 2">Mysore Food Storage Depot</option>
+              <option value="Depot 3">Belagavi Warehouse #3</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelRestockModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Restock Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: NOTIFICATION DETAILS -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop hidden" id="notificationDetailModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="notifDetailModalTitle">Notification Details</h3>
+        <button class="modal-close-btn" id="closeNotifDetailModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span class="badge badge-primary" id="notifDetailCategory">System Alert</span>
+          <span style="font-size: 0.78rem; color: var(--color-text-muted);" id="notifDetailTime">02 Aug 2026, 10:00 AM</span>
+        </div>
+        <h4 id="notifDetailHeading" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--color-primary);"></h4>
+        <p id="notifDetailBody" style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 16px;"></p>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted); border-top: 1px solid var(--color-border); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Type: <strong id="notifDetailIssuer">System Log</strong></span>
+          <span id="notifDetailStatusTag" class="badge">Read</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmNotifDetailModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vanilla JavaScript File -->
+  <script src="admin-dashboard.js"></script>
+</body>
+</html>

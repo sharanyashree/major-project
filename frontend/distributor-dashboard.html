@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ration Distribution System - FPS Distributor Portal</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Distributor Portal Stylesheet -->
+  <link rel="stylesheet" href="distributor-dashboard.css">
+</head>
+<body>
+
+  <div class="admin-app-container">
+    <!-- ===================================================================== -->
+    <!-- COLLAPSIBLE SIDEBAR -->
+    <!-- ===================================================================== -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Sidebar Header / Branding -->
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h2 class="brand-name">Ration Distribution System</h2>
+          <span class="brand-badge">FPS Distributor</span>
+        </div>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="sidebar-nav">
+        <ul class="nav-list">
+          <li class="nav-item active" data-target="dashboard">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="beneficiaries">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span class="nav-label">Beneficiaries</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="allocation">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+              <span class="nav-label">Monthly Allocation (Rice & Oil)</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="inventory">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 9v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9"/>
+                <path d="M9 22V12h6v10"/>
+                <path d="M2 10.6L12 2l10 8.6"/>
+              </svg>
+              <span class="nav-label">Inventory (Rice & Oil)</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="distribution">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <span class="nav-label">Distribution Records</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="notifications">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              <span class="nav-label">Notifications</span>
+              <span class="nav-badge">3</span>
+            </a>
+          </li>
+
+          <li class="nav-item" data-target="settings">
+            <a href="#" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span class="nav-label">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar">RC</div>
+          <div class="user-details">
+            <span class="user-name">Ramesh Chandra</span>
+            <span class="user-role">FPS-4201 Licensee</span>
+          </div>
+        </div>
+        <button class="logout-btn" id="sidebarLogoutBtn" title="Logout Session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- ===================================================================== -->
+    <!-- MAIN WRAPPER & TOP NAVBAR -->
+    <!-- ===================================================================== -->
+    <div class="main-wrapper">
+      <!-- Top Header / Navbar -->
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" title="Open Navigation Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="page-title-group">
+            <h1 class="page-title" id="pageTitle">Dashboard Overview</h1>
+            <p class="page-subtitle" id="pageSubtitle">Sri Annapurna Ration Store • FPS-4201</p>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <!-- FPS Outlet Tag -->
+          <div class="fps-info-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            </svg>
+            <span>FPS-4201 • Bangalore Urban</span>
+          </div>
+
+          <!-- Date Display -->
+          <div class="date-display">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span id="currentDateTimeText">Sunday, 02 Aug 2026</span>
+          </div>
+
+          <!-- Notification Bell Dropdown -->
+          <div class="top-notif-wrapper">
+            <button class="notif-btn" id="topNotifBtn" title="Admin Broadcasts">
+              <span style="font-size: 1.1rem; margin-right: 2px;">🔔</span>
+              <span class="notif-badge-count" id="distNotifBellCount">3</span>
+            </button>
+
+            <div class="notif-dropdown hidden" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <h4>System Alerts</h4>
+                <span class="badge badge-primary" id="notifDropdownBadge">0 New</span>
+              </div>
+              <div class="notif-list" id="notifDropdownList">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Menu Dropdown -->
+          <div class="profile-dropdown-wrapper">
+            <button class="profile-btn" id="profileBtn">
+              <div class="profile-avatar">RC</div>
+              <div class="profile-meta">
+                <span class="profile-name">Ramesh Chandra</span>
+                <span class="profile-role">FPS Distributor</span>
+              </div>
+              <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            <div class="profile-menu hidden" id="profileMenu">
+              <div class="profile-menu-header">
+                <p class="user-fullname">Ramesh Chandra</p>
+                <p class="user-email">ramesh.fps4201@pds.gov.in</p>
+              </div>
+              <hr class="menu-divider"/>
+              <button class="menu-item nav-trigger" data-target="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>FPS Store Profile</span>
+              </button>
+              <button class="menu-item text-danger" id="dropdownLogoutBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Log Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ===================================================================== -->
+      <!-- MAIN CONTENT CONTAINER -->
+      <!-- ===================================================================== -->
+      <main class="main-content">
+
+        <!-- =================================================================== -->
+        <!-- SECTION 1: DASHBOARD OVERVIEW -->
+        <!-- =================================================================== -->
+        <section class="content-section active" id="dashboardSection">
+          <!-- Store Header Summary -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; padding: 14px 20px; border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: 20px;">
+            <div>
+              <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary);">Sri Annapurna Ration Store (FPS-4201)</h2>
+              <p style="font-size: 0.85rem; color: var(--color-text-muted);">Fair Price Shop • Bangalore Urban North Jurisdiction</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-success); font-weight: 600;">
+              <span style="width: 10px; height: 10px; background-color: var(--color-success); border-radius: 50%; display: inline-block;"></span>
+              <span>e-POS Terminal Active</span>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS GRID (4 Cards Only) -->
+          <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <!-- Card 1: Today's Collections -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Today's Collections</span>
+                <div class="stat-icon icon-emerald">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statCollectedToday">18.5 <span class="unit">Qtl</span></div>
+              <div class="stat-footer">
+                <span class="stat-sub" id="statTodayBeneficiaries">48 Families Disbursed</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Pending Collections -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Pending Collections</span>
+                <div class="stat-icon icon-amber">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statPendingCollections">12 <span class="unit">Families</span></div>
+              <div class="stat-footer">
+                <span class="stat-sub">August 2026 Quota</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Available Stock -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Available Stock</span>
+                <div class="stat-icon icon-blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 9v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9"/>
+                    <path d="M9 22V12h6v10"/>
+                    <path d="M2 10.6L12 2l10 8.6"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" id="statTotalAvailableStock">367 <span class="unit">Units</span></div>
+              <div class="stat-footer">
+                <span class="stat-sub" id="statStockBreakdownSummary">Rice: 120 Qtl | Oil: 150 Ltr</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Machine Status -->
+            <div class="stat-card">
+              <div class="stat-header">
+                <span class="stat-title">Machine Status</span>
+                <div class="stat-icon icon-green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value" style="font-size: 1.25rem;">
+                <span class="badge badge-success" id="machineStatusBadge" style="padding: 4px 12px; font-size: 0.9rem;">Online & Active</span>
+              </div>
+              <div class="stat-footer">
+                <span class="stat-sub">e-POS Terminal #4201-A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD PANELS GRID -->
+          <div class="dashboard-panels-grid">
+            <!-- Recent Transactions Panel -->
+            <div class="card">
+              <div class="card-header flex-header">
+                <div>
+                  <h3 class="card-title">Recent Distribution Transactions</h3>
+                  <p class="card-subtitle">Real-time ration disbursements at FPS-4201</p>
+                </div>
+                <button class="btn btn-sm btn-outline nav-trigger" data-target="distribution">
+                  View All Records
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Txn ID</th>
+                      <th>Beneficiary</th>
+                      <th>Ration Card</th>
+                      <th>Commodities</th>
+                      <th>Time</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentTransactionsTableBody">
+                    <!-- Populated dynamically via distributor-dashboard.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- FPS Depot Summary -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Fair Price Shop Details</h3>
+                <p class="card-subtitle">Assigned Jurisdiction & Quotas</p>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.875rem;">
+                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                  <strong style="color: var(--color-text-main);">FPS Store Code:</strong>
+                  <span class="badge badge-primary" style="margin-left: 6px;">FPS-4201</span>
+                </div>
+                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                  <strong style="color: var(--color-text-main);">Licensed Licensee:</strong>
+                  <div style="color: var(--color-text-muted); margin-top: 2px;">Ramesh Chandra (ID: DIST-8842)</div>
+                </div>
+                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                  <strong style="color: var(--color-text-main);">Jurisdiction:</strong>
+                  <div style="color: var(--color-text-muted); margin-top: 2px;">Bangalore Urban • North Taluk (Ward 12 & 14)</div>
+                </div>
+                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                  <strong style="color: var(--color-text-main);">Total Registered Beneficiaries:</strong>
+                  <div style="color: var(--color-primary); font-weight: 700; font-size: 1.1rem; margin-top: 2px;" id="dashTotalBeneficiariesCount">156 Families</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 2: BENEFICIARY MANAGEMENT -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="beneficiariesSection">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">FPS Beneficiary Directory</h3>
+                <p class="card-subtitle">Manage families and ration cards assigned to FPS-4201</p>
+              </div>
+              <button class="btn btn-primary" id="openAddBeneficiaryModalBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>Add Beneficiary</span>
+              </button>
+            </div>
+
+            <!-- Toolbar & Filters -->
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="beneficiarySearchInput" placeholder="Search by Card Number, Head of Family, or Mobile...">
+              </div>
+
+              <div class="filter-group">
+                <select class="form-select" id="villageFilterSelect">
+                  <option value="ALL">All Villages / Wards</option>
+                  <option value="Yeshwanthpur">Yeshwanthpur</option>
+                  <option value="Mathikere">Mathikere</option>
+                  <option value="Hebbal">Hebbal</option>
+                  <option value="Gokula">Gokula</option>
+                </select>
+
+                <select class="form-select" id="statusFilterSelect">
+                  <option value="ALL">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ration Card No</th>
+                    <th>Head of Family</th>
+                    <th>Village / Ward</th>
+                    <th>Members</th>
+                    <th>Card Type</th>
+                    <th>Mobile Number</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="beneficiariesTableBody">
+                  <!-- JS Populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-footer">
+              <span id="beneficiariesCountText">Showing 0 beneficiaries</span>
+              <span>FPS Jurisdiction: Bangalore Urban North</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 3: MONTHLY ALLOCATION -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="allocationSection">
+          <div class="allocation-layout-grid">
+            <!-- Monthly Allocation Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Disburse Monthly Ration Allocation</h3>
+                <p class="card-subtitle">Issue authorized commodity quotas to FPS beneficiaries</p>
+              </div>
+
+              <form id="allocationForm">
+                <div class="form-grid">
+                  <!-- Select Beneficiary -->
+                  <div class="form-group full-width">
+                    <label class="form-label" for="allocBeneficiarySelect">Select Beneficiary Family <span style="color:red">*</span></label>
+                    <select class="form-select" id="allocBeneficiarySelect" required>
+                      <option value="">-- Choose Ration Card Beneficiary --</option>
+                    </select>
+                  </div>
+
+                  <!-- Allocation Month -->
+                  <div class="form-group full-width">
+                    <label class="form-label" for="allocMonthSelect">Allocation Month <span style="color:red">*</span></label>
+                    <select class="form-select" id="allocMonthSelect" required>
+                      <option value="August 2026" selected>August 2026</option>
+                      <option value="July 2026">July 2026</option>
+                      <option value="September 2026">September 2026</option>
+                    </select>
+                  </div>
+
+                  <!-- Rice Quantity -->
+                  <div class="form-group">
+                    <label class="form-label" for="allocRiceInput">Rice Quantity (Kg)</label>
+                    <input type="number" class="form-input" id="allocRiceInput" min="0" max="100" value="25" required>
+                  </div>
+
+                  <!-- Oil Quantity -->
+                  <div class="form-group">
+                    <label class="form-label" for="allocOilInput">Oil Quantity (Ltr)</label>
+                    <input type="number" class="form-input" id="allocOilInput" min="0" max="10" value="2" required>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="form-group full-width form-actions">
+                    <button type="submit" class="btn btn-primary" id="allocateSubmitBtn">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      <span>Authorize & Allocate Ration</span>
+                    </button>
+                    <button type="reset" class="btn btn-outline">Reset</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Allocation Quota Reference -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Government Subsidy Guidelines</h3>
+                <p class="card-subtitle">Standard Monthly Allocation Rates</p>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.85rem;">
+                <div style="padding: 12px; background: var(--color-primary-light); border-left: 4px solid var(--color-primary); border-radius: var(--radius-sm);">
+                  <strong style="color: var(--color-primary);">AAY (Antyodaya Anna Yojana):</strong>
+                  <p style="color: var(--color-text-muted); margin-top: 4px;">35 kg Rice/Wheat per family @ ₹0/kg + 1 kg Sugar + 1L Oil.</p>
+                </div>
+
+                <div style="padding: 12px; background: #ECFDF5; border-left: 4px solid #10B981; border-radius: var(--radius-sm);">
+                  <strong style="color: #065F46;">PHH (Priority Household):</strong>
+                  <p style="color: #047857; margin-top: 4px;">5 kg Foodgrains per member per month @ ₹0/kg.</p>
+                </div>
+
+                <div style="padding: 12px; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: var(--radius-sm);">
+                  <strong style="color: #92400E;">NPHH (Non-Priority Household):</strong>
+                  <p style="color: #78350F; margin-top: 4px;">Subsidized foodgrains at government regulated rates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Allocation History Table -->
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">Monthly Allocation History</h3>
+                <p class="card-subtitle">Log of disbursed rations for FPS-4201</p>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Allocation ID</th>
+                    <th>Beneficiary Name</th>
+                    <th>Ration Card No</th>
+                    <th>Commodity Breakdown</th>
+                    <th>Month</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="allocationHistoryTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 4: INVENTORY -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="inventorySection">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">FPS Store Inventory Stock</h3>
+              <p class="card-subtitle">Real-time commodity stock balances and safety thresholds for FPS-4201</p>
+            </div>
+
+            <!-- Simple Inventory Stock Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Commodity</th>
+                    <th>Available Stock</th>
+                    <th>Unit</th>
+                    <th>Min. Threshold</th>
+                    <th>Stock Status</th>
+                    <th>Last Updated</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                  <!-- Dynamically rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Stock Dispatch Inward History from Admin -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Inward Warehouse Dispatches Received</h3>
+              <p class="card-subtitle">Official stock transfers dispatched from Central Government Depots</p>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Dispatch Pass ID</th>
+                    <th>Commodity</th>
+                    <th>Quantity Received</th>
+                    <th>Dispatch Vehicle</th>
+                    <th>Date Received</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>DSP-2026-901</strong></td>
+                    <td>Rice</td>
+                    <td><strong>50 Quintals</strong></td>
+                    <td>KA-01-GA-8842</td>
+                    <td>2026-08-01</td>
+                    <td><span class="badge badge-success">Delivered & Added</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>DSP-2026-880</strong></td>
+                    <td>Wheat</td>
+                    <td><strong>35 Quintals</strong></td>
+                    <td>KA-53-E-1029</td>
+                    <td>2026-07-28</td>
+                    <td><span class="badge badge-success">Delivered & Added</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>DSP-2026-812</strong></td>
+                    <td>Edible Oil</td>
+                    <td><strong>200 Liters</strong></td>
+                    <td>KA-09-M-4421</td>
+                    <td>2026-07-20</td>
+                    <td><span class="badge badge-success">Delivered & Added</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 5: DISTRIBUTION RECORDS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="distributionSection">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">Distribution Transaction Ledger</h3>
+                <p class="card-subtitle">Complete ledger of ration collections at Fair Price Shop 4201</p>
+              </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="distributionSearchInput" placeholder="Search by Txn ID, Card No, or Beneficiary Name...">
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Beneficiary Name</th>
+                    <th>Ration Card No</th>
+                    <th>Commodities Collected</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Collection Status</th>
+                    <th>Receipt</th>
+                  </tr>
+                </thead>
+                <tbody id="distributionTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 6: NOTIFICATIONS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="notificationsSection">
+          <div class="card">
+            <div class="card-header flex-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+              <div>
+                <h3 class="card-title">Event-Based Portal Notifications</h3>
+                <p class="card-subtitle">Official alerts regarding stock dispatches, received stock, low inventory, and beneficiary registrations</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-outline btn-sm" id="distNotifMarkAllReadBtn">Mark All as Read</button>
+                <button class="btn btn-outline btn-sm text-danger" id="distNotifClearReadBtn">Clear Read Notifications</button>
+              </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div style="display: flex; gap: 8px; margin: 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;" id="distNotifFilterGroup">
+              <button class="notif-filter-btn active" data-filter="all">All</button>
+              <button class="notif-filter-btn" data-filter="unread">Unread</button>
+              <button class="notif-filter-btn" data-filter="read">Read</button>
+            </div>
+
+            <div class="notifications-feed-list" id="notificationsFeedList">
+              <!-- Dynamically populated via JS event notifications -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION 7: SETTINGS -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="settingsSection">
+          <div class="settings-layout-grid">
+            <!-- Profile Info Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">FPS Store & Licensee Profile</h3>
+                <p class="card-subtitle">Official details registered with Civil Supplies Department</p>
+              </div>
+
+              <form id="distributorProfileForm">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="settingDistributorId">Distributor ID</label>
+                    <input type="text" class="form-input" id="settingDistributorId" value="DIST-8842" readonly style="background: var(--color-bg);">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="settingFpsCode">FPS Store Code</label>
+                    <input type="text" class="form-input" id="settingFpsCode" value="FPS-4201" readonly style="background: var(--color-bg);">
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label class="form-label" for="settingFullName">Licensee Full Name</label>
+                    <input type="text" class="form-input" id="settingFullName" value="Ramesh Chandra" required>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label class="form-label" for="settingFpsName">FPS Store Name</label>
+                    <input type="text" class="form-input" id="settingFpsName" value="Sri Annapurna Ration Store" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="settingDistrict">District</label>
+                    <input type="text" class="form-input" id="settingDistrict" value="Bangalore Urban" readonly style="background: var(--color-bg);">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="settingTaluk">Taluk</label>
+                    <input type="text" class="form-input" id="settingTaluk" value="North Taluk" readonly style="background: var(--color-bg);">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="settingMobile">Mobile Number</label>
+                    <input type="tel" class="form-input" id="settingMobile" value="9876543210" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="settingEmail">Official Email</label>
+                    <input type="email" class="form-input" id="settingEmail" value="ramesh.fps4201@gmail.com" required>
+                  </div>
+
+                  <div class="form-group full-width form-actions">
+                    <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Password Form -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Security & Password</h3>
+                <p class="card-subtitle">Update your portal credentials</p>
+              </div>
+
+              <form id="distributorPasswordForm">
+                <div class="form-grid">
+                  <div class="form-group full-width">
+                    <label class="form-label" for="currentPasswordInput">Current Password</label>
+                    <input type="password" class="form-input" id="currentPasswordInput" placeholder="Enter current password" required>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label class="form-label" for="newPasswordInput">New Password</label>
+                    <input type="password" class="form-input" id="newPasswordInput" placeholder="Enter new password (min 6 chars)" required>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label class="form-label" for="confirmNewPasswordInput">Confirm New Password</label>
+                    <input type="password" class="form-input" id="confirmNewPasswordInput" placeholder="Re-enter new password" required>
+                  </div>
+
+                  <div class="form-group full-width form-actions">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- TOAST ALERT NOTIFICATION -->
+  <!-- ======================================================================= -->
+  <div class="toast-alert hidden" id="toastAlert">
+    <span id="toastMsg">Action completed successfully.</span>
+    <button class="toast-close" id="toastCloseBtn">&times;</button>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODALS -->
+  <!-- ======================================================================= -->
+
+  <!-- Add / Edit Beneficiary Modal -->
+  <div class="modal-backdrop hidden" id="beneficiaryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="beneficiaryModalTitle">Add New Beneficiary Family</h3>
+        <button class="modal-close-btn" id="closeBeneficiaryModalBtn">&times;</button>
+      </div>
+      <form id="beneficiaryForm">
+        <div class="modal-body">
+          <input type="hidden" id="editBeneficiaryIndex" value="-1">
+
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label" for="modalRationCardNo">Ration Card Number <span style="color:red">*</span></label>
+              <input type="text" class="form-input" id="modalRationCardNo" placeholder="e.g. RC98765432" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="modalHeadOfFamily">Head of Family Name <span style="color:red">*</span></label>
+              <input type="text" class="form-input" id="modalHeadOfFamily" placeholder="Full name of cardholder" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalVillage">Village / Ward <span style="color:red">*</span></label>
+              <input type="text" class="form-input" id="modalVillage" placeholder="e.g. Yeshwanthpur" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalFamilyMembers">Family Members Count <span style="color:red">*</span></label>
+              <input type="number" class="form-input" id="modalFamilyMembers" min="1" max="20" value="4" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalCardType">Card Category <span style="color:red">*</span></label>
+              <select class="form-select" id="modalCardType" required>
+                <option value="PHH" selected>PHH (Priority Household)</option>
+                <option value="AAY">AAY (Antyodaya Anna)</option>
+                <option value="NPHH">NPHH (Non-Priority)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalMobile">Mobile Number <span style="color:red">*</span></label>
+              <input type="tel" class="form-input" id="modalMobile" placeholder="10-digit mobile number" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label" for="modalStatus">Beneficiary Status <span style="color:red">*</span></label>
+              <select class="form-select" id="modalStatus" required>
+                <option value="Active" selected>Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelBeneficiaryModalBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Beneficiary</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Beneficiary Modal -->
+  <div class="modal-backdrop hidden" id="viewBeneficiaryModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Beneficiary Details</h3>
+        <button class="modal-close-btn" id="closeViewBeneficiaryModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="viewBeneficiaryModalContent">
+        <!-- Content inserted dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmViewBeneficiaryModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Details Modal -->
+  <div class="modal-backdrop hidden" id="notificationDetailModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="notifDetailModalTitle">Notification Details</h3>
+        <button class="modal-close-btn" id="closeNotifDetailModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span class="badge badge-primary" id="notifDetailCategory">Distributor Notice</span>
+          <span style="font-size: 0.78rem; color: var(--color-text-muted);" id="notifDetailTime">02 Aug 2026, 10:00 AM</span>
+        </div>
+        <h4 id="notifDetailHeading" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--color-primary);"></h4>
+        <p id="notifDetailBody" style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 16px;"></p>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted); border-top: 1px solid var(--color-border); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Sender: <strong id="notifDetailIssuer">PDS Admin System</strong></span>
+          <span id="notifDetailStatusTag" class="badge">Read</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmNotifDetailModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script src="distributor-dashboard.js"></script>
+</body>
+</html>

@@ -541,54 +541,23 @@
           <!-- Central Depot Breakdown Table -->
           <div class="card margin-top">
             <div class="card-header">
-              <h3 class="card-title">Central Depots Capacity & Reserve Ledger</h3>
-              <p class="card-subtitle">District-wise storage distribution in Government silos</p>
+              <h3 class="card-title">FPS Distributor Current Stock Reserves</h3>
+              <p class="card-subtitle">Live commodity stock balances held across Fair Price Shops</p>
             </div>
             <div class="table-responsive">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Depot Name</th>
-                    <th>District</th>
-                    <th>Main Commodities Stored</th>
-                    <th>Total Capacity</th>
-                    <th>Current Reserve</th>
+                    <th>Distributor / FPS Name</th>
+                    <th>FPS Code</th>
+                    <th>District & Taluk</th>
+                    <th>Rice Stock (kg)</th>
+                    <th>Oil Stock (L)</th>
                     <th>Status</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Central Silo #1</strong></td>
-                    <td>Bangalore Urban</td>
-                    <td>Rice, Wheat, Sugar, Oil</td>
-                    <td>25,000 MT</td>
-                    <td>21,800 MT (87%)</td>
-                    <td><span class="badge badge-success">Optimal</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Mysore Food Storage Depot</strong></td>
-                    <td>Mysore</td>
-                    <td>Rice, Wheat</td>
-                    <td>18,000 MT</td>
-                    <td>14,500 MT (80%)</td>
-                    <td><span class="badge badge-success">Optimal</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Belagavi Warehouse #3</strong></td>
-                    <td>Belagavi</td>
-                    <td>Rice, Sugar, Oil</td>
-                    <td>15,000 MT</td>
-                    <td>8,200 MT (54%)</td>
-                    <td><span class="badge badge-warning">Low Sugar Stock</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Kalaburagi Grain Reserve</strong></td>
-                    <td>Kalaburagi</td>
-                    <td>Wheat, Rice</td>
-                    <td>20,000 MT</td>
-                    <td>18,200 MT (91%)</td>
-                    <td><span class="badge badge-success">Optimal</span></td>
-                  </tr>
+                <tbody id="distributorStockLedgerTableBody">
+                  <!-- Populated dynamically via Central Inventory API -->
                 </tbody>
               </table>
             </div>
@@ -749,23 +718,23 @@
             <div class="card">
               <div class="card-header flex-header">
                 <div>
-                  <h3 class="card-title">Monthly Allocation & Distribution Summary</h3>
-                  <p class="card-subtitle">August 2026 Grain Distribution Overview</p>
+                  <h3 class="card-title">Distribution & Transactions Summary</h3>
+                  <p class="card-subtitle">Public Distribution System Consolidated Ledger</p>
                 </div>
-                <span class="badge badge-primary">August 2026</span>
+                <span class="badge badge-primary">Live Backend</span>
               </div>
               <div class="report-summary-metrics">
                 <div class="report-metric">
-                  <span class="m-label">Total Allocated</span>
-                  <span class="m-value">1,500 MT</span>
+                  <span class="m-label">Total Distributors</span>
+                  <span class="m-value" id="reportTotalDistributors">0</span>
                 </div>
                 <div class="report-metric">
-                  <span class="m-label">Dispatched to FPS</span>
-                  <span class="m-value text-primary">1,420 MT</span>
+                  <span class="m-label">Total Beneficiaries</span>
+                  <span class="m-value text-primary" id="reportTotalBeneficiaries">0</span>
                 </div>
                 <div class="report-metric">
-                  <span class="m-label">Fulfillment Rate</span>
-                  <span class="m-value text-success">94.6%</span>
+                  <span class="m-label">Total Transactions</span>
+                  <span class="m-value text-success" id="reportTotalTransactions">0</span>
                 </div>
               </div>
             </div>
@@ -774,100 +743,63 @@
             <div class="card">
               <div class="card-header flex-header">
                 <div>
-                  <h3 class="card-title">State Central Reserve Summary</h3>
-                  <p class="card-subtitle">Total food grains held across 18 State Depots</p>
+                  <h3 class="card-title">State Central Reserve & Distributed</h3>
+                  <p class="card-subtitle">Current stock and total dispensed quantities</p>
                 </div>
-                <span class="badge badge-success">Optimal Level</span>
+                <span class="badge badge-success" id="reportStockStatusBadge">Optimal Level</span>
               </div>
               <div class="report-summary-metrics">
                 <div class="report-metric">
-                  <span class="m-label">Rice Reserve</span>
-                  <span class="m-value">45,200 Qtl</span>
+                  <span class="m-label">Central Rice Reserve</span>
+                  <span class="m-value" id="reportCentralRice">0 kg</span>
                 </div>
                 <div class="report-metric">
-                  <span class="m-label">Wheat Reserve</span>
-                  <span class="m-value">32,800 Qtl</span>
+                  <span class="m-label">Central Oil Reserve</span>
+                  <span class="m-value" id="reportCentralOil">0 L</span>
                 </div>
                 <div class="report-metric">
-                  <span class="m-label">Sugar Reserve</span>
-                  <span class="m-value text-amber">12,400 Qtl</span>
+                  <span class="m-label">Rice Distributed</span>
+                  <span class="m-value text-primary" id="reportDistributedRice">0 kg</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- District-wise Distribution Table -->
+          <!-- Real Transactions & Allocations Report Table -->
           <div class="card margin-top">
             <div class="card-header flex-header">
               <div>
-                <h3 class="card-title">District-wise PDS Allocation Table</h3>
-                <p class="card-subtitle">Commodity distribution fulfillment across major administrative districts</p>
+                <h3 class="card-title">Transactions & Distribution Report</h3>
+                <p class="card-subtitle">Real-time dispensing records and commodity disbursement across Fair Price Shops</p>
               </div>
-              <button class="btn btn-outline btn-sm" id="exportDistrictReportBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span>Download Report CSV</span>
-              </button>
+              <div class="filter-group" style="display: flex; gap: 8px; align-items: center;">
+                <select id="reportPeriodSelect" class="form-select">
+                  <option value="daily">Today's Transactions</option>
+                  <option value="monthly" selected>This Month's Transactions</option>
+                </select>
+                <input type="date" id="reportDateInput" class="form-input" style="display: none;">
+                <button class="btn btn-outline btn-sm" id="exportDistrictReportBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Export CSV</span>
+                </button>
+              </div>
             </div>
 
             <div class="table-responsive">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>District Name</th>
-                    <th>Active FPS Shops</th>
-                    <th>Rice Dispatched</th>
-                    <th>Wheat Dispatched</th>
-                    <th>Sugar Dispatched</th>
-                    <th>Fulfillment Rate</th>
+                    <th>Transaction ID</th>
+                    <th>Beneficiary / Ration Card</th>
+                    <th>FPS Distributor</th>
+                    <th>Rice Dispensed</th>
+                    <th>Oil Dispensed</th>
+                    <th>Date & Time</th>
                     <th>Status</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Bangalore Urban</strong></td>
-                    <td>82 Shops</td>
-                    <td>14,500 Qtl</td>
-                    <td>10,200 Qtl</td>
-                    <td>3,800 Qtl</td>
-                    <td>98.2%</td>
-                    <td><span class="badge badge-success">Excellent</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Mysore</strong></td>
-                    <td>45 Shops</td>
-                    <td>8,200 Qtl</td>
-                    <td>6,100 Qtl</td>
-                    <td>2,200 Qtl</td>
-                    <td>95.4%</td>
-                    <td><span class="badge badge-success">Good</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Belagavi</strong></td>
-                    <td>52 Shops</td>
-                    <td>9,800 Qtl</td>
-                    <td>7,400 Qtl</td>
-                    <td>1,900 Qtl</td>
-                    <td>88.1%</td>
-                    <td><span class="badge badge-warning">Under Review</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Kalaburagi</strong></td>
-                    <td>38 Shops</td>
-                    <td>6,400 Qtl</td>
-                    <td>5,100 Qtl</td>
-                    <td>1,800 Qtl</td>
-                    <td>92.8%</td>
-                    <td><span class="badge badge-success">Good</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Mangalore</strong></td>
-                    <td>31 Shops</td>
-                    <td>6,300 Qtl</td>
-                    <td>4,000 Qtl</td>
-                    <td>2,700 Qtl</td>
-                    <td>96.0%</td>
-                    <td><span class="badge badge-success">Excellent</span></td>
-                  </tr>
+                <tbody id="reportsTransactionsTableBody">
+                  <!-- Populated dynamically via Backend API -->
                 </tbody>
               </table>
             </div>
@@ -1225,6 +1157,7 @@
   </div>
 
   <!-- Vanilla JavaScript File -->
-  <script src="admin-dashboard.js"></script>
+  <script type="module" src="api.js"></script>
+  <script type="module" src="admin-dashboard.js"></script>
 </body>
 </html>

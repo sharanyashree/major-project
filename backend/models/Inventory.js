@@ -8,6 +8,12 @@ const inventorySchema = new mongoose.Schema(
       default: null,
       sparse: true,
     },
+    distributorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Distributor',
+      default: null,
+      sparse: true,
+    },
     riceStock: {
       type: Number,
       required: true,

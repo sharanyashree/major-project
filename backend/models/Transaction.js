@@ -54,4 +54,10 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
+transactionSchema.virtual('transactionId').get(function () {
+  return this._id.toString();
+});
+transactionSchema.set('toJSON', { virtuals: true });
+transactionSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Transaction', transactionSchema);

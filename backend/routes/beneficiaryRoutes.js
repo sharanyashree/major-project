@@ -42,6 +42,7 @@ router.get('/dashboard', getDashboardSummary);
 router.get('/profile', getProfile);
 router.put('/profile', updateProfile);
 router.put('/profile/change-password', changePassword);
+router.put('/change-password', changePassword);
 
 // ==========================================
 // 3. ALLOCATION ROUTES

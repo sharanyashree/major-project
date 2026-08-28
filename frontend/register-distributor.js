@@ -2,8 +2,10 @@
  * Ration Distribution System - Distributor Registration Page Logic
  * Pure Vanilla JavaScript (ES6+)
  * 
- * Clean, modular code ready for Node.js + MongoDB API integration.
+ * Connected to Express + MongoDB Backend API Endpoints
  */
+
+import { authApi } from './api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
@@ -339,12 +341,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =======================================================================
-    // VALID REGISTRATION DATA (Ready for POST /api/auth/register-distributor)
+    // REAL BACKEND REGISTRATION (POST /api/auth/distributor/register)
     // =======================================================================
     const distributorPayload = {
-      role: 'distributor',
-      fullName: fullNameVal,
+      name: fullNameVal,
       distributorId: distributorIdVal.toUpperCase(),
+      fpsCode: distributorIdVal.toUpperCase(),
       fpsName: fpsNameVal,
       mobileNumber: mobileVal,
       email: emailVal.toLowerCase(),
@@ -352,47 +354,47 @@ document.addEventListener('DOMContentLoaded', () => {
       taluk: talukVal,
       village: villageVal,
       address: addressVal,
-      password: passwordVal,
-      registeredAt: new Date().toISOString()
+      password: passwordVal
     };
-
-    console.log('Registering Distributor payload:', distributorPayload);
 
     // Loading State UI
     registerBtn.disabled = true;
     btnText.textContent = 'Creating FPS Account...';
     spinner.classList.remove('hidden');
 
-    // Simulate Server API Response
-    setTimeout(() => {
-      registerBtn.disabled = false;
-      btnText.textContent = 'Register';
-      spinner.classList.add('hidden');
+    (async () => {
+      try {
+        const response = await authApi.registerDistributor(distributorPayload);
 
-      // Save distributor details to localStorage for persistent state simulation
-      const existingDistributors = JSON.parse(localStorage.getItem('ration_registered_distributors') || '[]');
-      existingDistributors.push(distributorPayload);
-      localStorage.setItem('ration_registered_distributors', JSON.stringify(existingDistributors));
+        showAlert(response.message || 'Distributor registration successful! Awaiting approval.', 'success');
 
-      showAlert('Distributor Registration successful! Account created.', 'success');
+        openModal(
+          'FPS Distributor Registered!',
+          `
+            <p style="margin-bottom: 12px;">Welcome <strong>${fullNameVal}</strong>!</p>
+            <p style="margin-bottom: 8px;">Your Fair Price Shop account <strong>${distributorIdVal.toUpperCase()}</strong> (${fpsNameVal}) has been submitted for admin approval.</p>
+            <ul style="padding-left: 20px; margin-bottom: 16px; font-size: 0.875rem; color: #4B5563;">
+              <li><strong>Distributor ID:</strong> ${distributorIdVal.toUpperCase()}</li>
+              <li><strong>Mobile:</strong> ${mobileVal}</li>
+              <li><strong>Location:</strong> ${talukVal}, ${districtVal}</li>
+              <li><strong>Status:</strong> ${response.data?.status || 'Pending Admin Approval'}</li>
+            </ul>
+            <p style="font-size: 0.85rem; color: #6B7280;">Once an administrator activates your account, you will be able to log in with your credentials.</p>
+          `
+        );
 
-      openModal(
-        'FPS Distributor Account Registered!',
-        `
-          <p style="margin-bottom: 12px;">Welcome <strong>${fullNameVal}</strong>!</p>
-          <p style="margin-bottom: 8px;">Your Fair Price Shop account <strong>${distributorIdVal.toUpperCase()}</strong> (${fpsNameVal}) has been successfully created.</p>
-          <ul style="padding-left: 20px; margin-bottom: 16px; font-size: 0.875rem; color: #4B5563;">
-            <li><strong>Email:</strong> ${emailVal}</li>
-            <li><strong>Mobile:</strong> ${mobileVal}</li>
-            <li><strong>Location:</strong> ${villageVal}, ${talukVal}, ${districtVal}</li>
-          </ul>
-          <p style="font-size: 0.85rem; color: #6B7280;">You can now log in using your Distributor ID or Mobile Number with your password.</p>
-        `
-      );
-
-      // Reset form
-      registerForm.reset();
-    }, 1200);
+        // Reset form
+        registerForm.reset();
+      } catch (err) {
+        const errorMsg = err.message || 'Registration failed. Please check your information and try again.';
+        showAlert(errorMsg, 'error');
+        triggerShake();
+      } finally {
+        registerBtn.disabled = false;
+        btnText.textContent = 'Register';
+        spinner.classList.add('hidden');
+      }
+    })();
   });
 
   // =========================================================================

@@ -23,18 +23,21 @@ const generateToken = (payload) => {
  */
 const adminLogin = async (req, res) => {
   try {
-    const { adminId, password } = req.body;
+    const rawAdminId = req.body.adminId || req.body.username || req.body.email || req.body.id;
+    const { password } = req.body;
 
-    if (!adminId || !password) {
+    if (!rawAdminId || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide both Admin ID and password',
       });
     }
 
+    const trimmedAdminId = String(rawAdminId).trim().toUpperCase();
+
     // Find admin by adminId (case-insensitive search / uppercase format)
     const admin = await Admin.findOne({
-      adminId: adminId.trim().toUpperCase(),
+      adminId: trimmedAdminId,
     });
 
     if (!admin) {
@@ -90,18 +93,35 @@ const adminLogin = async (req, res) => {
  */
 const distributorLogin = async (req, res) => {
   try {
-    const { distributorId, password } = req.body;
+    const rawDistributorId =
+      req.body.distributorId ||
+      req.body.distributor_id ||
+      req.body.identifier ||
+      req.body.username ||
+      req.body.mobileNumber ||
+      req.body.mobile ||
+      req.body.phone ||
+      req.body.fpsCode ||
+      req.body.fps_code;
+    const { password } = req.body;
 
-    if (!distributorId || !password) {
+    if (!rawDistributorId || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide both Distributor ID and password',
       });
     }
 
-    // Find distributor by distributorId
+    const trimmedId = String(rawDistributorId).trim();
+    const formattedDistributorId = trimmedId.toUpperCase();
+
+    // Find distributor by distributorId, mobileNumber, or fpsCode
     const distributor = await Distributor.findOne({
-      distributorId: distributorId.trim().toUpperCase(),
+      $or: [
+        { distributorId: formattedDistributorId },
+        { mobileNumber: trimmedId },
+        { fpsCode: trimmedId },
+      ],
     });
 
     if (!distributor) {
@@ -168,18 +188,34 @@ const distributorLogin = async (req, res) => {
  */
 const beneficiaryLogin = async (req, res) => {
   try {
-    const { rationCardNumber, password } = req.body;
+    const rawRationCard =
+      req.body.identifier ||
+      req.body.rationCardNumber ||
+      req.body.rationCardNo ||
+      req.body.cardNo ||
+      req.body.username ||
+      req.body.mobileNumber ||
+      req.body.mobile ||
+      req.body.phone ||
+      req.body.rfidUid;
+    const { password } = req.body;
 
-    if (!rationCardNumber || !password) {
+    if (!rawRationCard || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide both Ration Card Number and password',
       });
     }
 
-    // Find beneficiary by rationCardNumber
+    const trimmedIdentifier = String(rawRationCard).trim();
+
+    // Find beneficiary by rationCardNumber, mobileNumber, or rfidUid
     const beneficiary = await Beneficiary.findOne({
-      rationCardNumber: rationCardNumber.trim(),
+      $or: [
+        { rationCardNumber: trimmedIdentifier },
+        { mobileNumber: trimmedIdentifier },
+        { rfidUid: trimmedIdentifier },
+      ],
     }).populate('assignedDistributor', 'name fpsCode district taluk');
 
     if (!beneficiary) {
@@ -250,25 +286,19 @@ const beneficiaryLogin = async (req, res) => {
  */
 const beneficiaryRegister = async (req, res) => {
   try {
-    const {
-      fullName,
-      rationCardNumber,
-      mobileNumber,
-      password,
-      district,
-      taluk,
-      village,
-      address,
-      familyMemberCount,
-      rfidUid,
-      assignedDistributor,
-    } = req.body;
+    const rawFullName = req.body.fullName || req.body.name;
+    const rawRationCardNumber = req.body.rationCardNumber || req.body.rationCardNo || req.body.cardNo;
+    const rawMobileNumber = req.body.mobileNumber || req.body.phone || req.body.mobile;
+    const { password, district, taluk, village, address } = req.body;
+    const familyMemberCount = req.body.familyMemberCount || req.body.familyMembers || req.body.members || 1;
+    const rfidUid = req.body.rfidUid || req.body.rfidTag || req.body.rfid;
+    const assignedDistributor = req.body.assignedDistributor || req.body.distributorId || req.body.distributor;
 
     // Validate required fields
     if (
-      !fullName ||
-      !rationCardNumber ||
-      !mobileNumber ||
+      !rawFullName ||
+      !rawRationCardNumber ||
+      !rawMobileNumber ||
       !password ||
       !district ||
       !taluk
@@ -279,9 +309,11 @@ const beneficiaryRegister = async (req, res) => {
       });
     }
 
+    const trimmedRationCard = String(rawRationCardNumber).trim();
+
     // Check if duplicate Ration Card Number exists
     const existingBeneficiary = await Beneficiary.findOne({
-      rationCardNumber: rationCardNumber.trim(),
+      rationCardNumber: trimmedRationCard,
     });
 
     if (existingBeneficiary) {
@@ -292,9 +324,10 @@ const beneficiaryRegister = async (req, res) => {
     }
 
     // Check if duplicate RFID UID exists (if provided)
-    if (rfidUid && rfidUid.trim()) {
+    if (rfidUid && String(rfidUid).trim()) {
+      const trimmedRfid = String(rfidUid).trim();
       const existingRfid = await Beneficiary.findOne({
-        rfidUid: rfidUid.trim(),
+        rfidUid: trimmedRfid,
       });
       if (existingRfid) {
         return res.status(400).json({
@@ -307,14 +340,21 @@ const beneficiaryRegister = async (req, res) => {
     // Verify assigned distributor exists (if provided)
     let distributorToAssign = null;
     if (assignedDistributor) {
-      const distributorExists = await Distributor.findById(assignedDistributor);
+      let distributorExists = null;
+      if (typeof assignedDistributor === 'string' && assignedDistributor.length === 24) {
+        distributorExists = await Distributor.findById(assignedDistributor);
+      }
       if (!distributorExists) {
-        return res.status(404).json({
-          success: false,
-          message: 'Assigned Distributor not found',
+        distributorExists = await Distributor.findOne({
+          $or: [
+            { distributorId: String(assignedDistributor).trim().toUpperCase() },
+            { fpsCode: String(assignedDistributor).trim() },
+          ],
         });
       }
-      distributorToAssign = assignedDistributor;
+      if (distributorExists) {
+        distributorToAssign = distributorExists._id;
+      }
     }
 
     // Hash password
@@ -323,16 +363,16 @@ const beneficiaryRegister = async (req, res) => {
 
     // Create beneficiary
     const beneficiary = await Beneficiary.create({
-      fullName: fullName.trim(),
-      rationCardNumber: rationCardNumber.trim(),
-      mobileNumber: mobileNumber.trim(),
+      fullName: String(rawFullName).trim(),
+      rationCardNumber: trimmedRationCard,
+      mobileNumber: String(rawMobileNumber).trim(),
       password: hashedPassword,
-      district: district.trim(),
-      taluk: taluk.trim(),
-      village: village ? village.trim() : '',
-      address: address ? address.trim() : '',
-      familyMemberCount: familyMemberCount ? Number(familyMemberCount) : 1,
-      rfidUid: rfidUid ? rfidUid.trim() : undefined,
+      district: String(district).trim(),
+      taluk: String(taluk).trim(),
+      village: village ? String(village).trim() : '',
+      address: address ? String(address).trim() : '',
+      familyMemberCount: Math.max(1, Number(familyMemberCount) || 1),
+      rfidUid: rfidUid && String(rfidUid).trim() ? String(rfidUid).trim() : undefined,
       assignedDistributor: distributorToAssign,
       status: 'Active',
     });
@@ -373,20 +413,14 @@ const beneficiaryRegister = async (req, res) => {
  */
 const distributorRegister = async (req, res) => {
   try {
-    const {
-      name,
-      mobileNumber,
-      distributorId,
-      password,
-      fpsCode,
-      district,
-      taluk,
-    } = req.body;
+    const rawName = req.body.name || req.body.distributorName || req.body.ownerName;
+    const rawMobileNumber = req.body.mobileNumber || req.body.phone || req.body.mobile;
+    const { distributorId, password, fpsCode, district, taluk } = req.body;
 
     // Validate required fields
     if (
-      !name ||
-      !mobileNumber ||
+      !rawName ||
+      !rawMobileNumber ||
       !distributorId ||
       !password ||
       !fpsCode ||
@@ -399,7 +433,8 @@ const distributorRegister = async (req, res) => {
       });
     }
 
-    const formattedDistributorId = distributorId.trim().toUpperCase();
+    const formattedDistributorId = String(distributorId).trim().toUpperCase();
+    const formattedFpsCode = String(fpsCode).trim();
 
     // Check duplicate Distributor ID
     const existingDistributorId = await Distributor.findOne({
@@ -415,7 +450,7 @@ const distributorRegister = async (req, res) => {
 
     // Check duplicate FPS Code
     const existingFpsCode = await Distributor.findOne({
-      fpsCode: fpsCode.trim(),
+      fpsCode: formattedFpsCode,
     });
 
     if (existingFpsCode) {
@@ -431,13 +466,13 @@ const distributorRegister = async (req, res) => {
 
     // Create distributor with Status = 'Pending'
     const distributor = await Distributor.create({
-      name: name.trim(),
-      mobileNumber: mobileNumber.trim(),
+      name: String(rawName).trim(),
+      mobileNumber: String(rawMobileNumber).trim(),
       distributorId: formattedDistributorId,
       password: hashedPassword,
-      fpsCode: fpsCode.trim(),
-      district: district.trim(),
-      taluk: taluk.trim(),
+      fpsCode: formattedFpsCode,
+      district: String(district).trim(),
+      taluk: String(taluk).trim(),
       status: 'Pending',
     });
 
@@ -466,10 +501,23 @@ const distributorRegister = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Logout User / Invalidate session
+ * @route   POST /api/auth/logout
+ * @access  Public / Private
+ */
+const logout = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'Logged out successfully',
+  });
+};
+
 module.exports = {
   adminLogin,
   distributorLogin,
   beneficiaryLogin,
   beneficiaryRegister,
   distributorRegister,
+  logout,
 };

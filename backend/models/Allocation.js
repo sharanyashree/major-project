@@ -40,7 +40,7 @@ const allocationSchema = new mongoose.Schema(
     },
     collectionStatus: {
       type: String,
-      enum: ['Pending', 'Collected'],
+      enum: ['Pending', 'Partially Collected', 'Collected'],
       default: 'Pending',
     },
   },

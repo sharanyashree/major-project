@@ -2,8 +2,10 @@
  * Ration Distribution System - Login Page Logic
  * Pure Vanilla JavaScript (ES6+)
  * 
- * Clean, modular code designed for seamless Node.js + MongoDB integration.
+ * Connected to Express + MongoDB Backend API Endpoints
  */
+
+import { authApi } from './api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
@@ -267,55 +269,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =======================================================================
-    // VALID SUCCESSFUL STATE
-    // Prepare JSON payload for Node.js / MongoDB backend endpoint (e.g. POST /api/auth/login)
+    // REAL BACKEND API AUTHENTICATION
+    // Calls POST /api/auth/admin/login, POST /api/auth/distributor/login, or POST /api/auth/beneficiary/login
     // =======================================================================
-    const loginPayload = {
-      role: selectedRole,
-      identifier: identifierVal,
-      password: passwordVal,
-      rememberMe: document.getElementById('rememberMe').checked,
-      timestamp: new Date().toISOString()
-    };
-
-    console.log('Authenticating with payload:', loginPayload);
-
     // Show Loading UI
     loginBtn.disabled = true;
     btnText.textContent = 'Authenticating...';
     spinner.classList.remove('hidden');
 
-    // Simulate Server Authentication Delay
-    setTimeout(() => {
-      loginBtn.disabled = false;
-      btnText.textContent = 'Sign In';
-      spinner.classList.add('hidden');
-
-      // Save mock session data in localStorage for easy access
-      localStorage.setItem('ration_auth_session', JSON.stringify({
-        role: selectedRole,
-        identifier: identifierVal,
-        isLoggedIn: true,
-        loginTime: new Date().toLocaleString()
-      }));
-
-      showAlert(`Welcome! Authentication successful as ${selectedRole.toUpperCase()}. Redirecting to portal...`, 'success');
-
-      // Clear fields
-      passwordInput.value = '';
-
-      // Redirect to respective dashboard after authorization
-      setTimeout(() => {
+    (async () => {
+      try {
+        let response;
         if (selectedRole === 'admin') {
-          window.location.href = 'admin-dashboard.html';
+          response = await authApi.adminLogin({
+            adminId: identifierVal,
+            password: passwordVal,
+          });
         } else if (selectedRole === 'distributor') {
-          window.location.href = 'distributor-dashboard.html';
+          response = await authApi.distributorLogin({
+            distributorId: identifierVal,
+            password: passwordVal,
+          });
         } else {
-          window.location.href = 'beneficiary-dashboard.html';
+          response = await authApi.beneficiaryLogin({
+            rationCardNumber: identifierVal,
+            password: passwordVal,
+          });
         }
-      }, 500);
 
-    }, 1200);
+        showAlert(`Welcome! Authentication successful as ${selectedRole.toUpperCase()}. Redirecting to portal...`, 'success');
+
+        // Clear fields
+        passwordInput.value = '';
+
+        // Redirect to respective dashboard after authorization
+        setTimeout(() => {
+          if (selectedRole === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+          } else if (selectedRole === 'distributor') {
+            window.location.href = 'distributor-dashboard.html';
+          } else {
+            window.location.href = 'beneficiary-dashboard.html';
+          }
+        }, 500);
+
+      } catch (err) {
+        const errorMsg = err.message || 'Authentication failed. Please verify your credentials.';
+        showAlert(errorMsg, 'error');
+        triggerShake();
+      } finally {
+        loginBtn.disabled = false;
+        btnText.textContent = 'Sign In';
+        spinner.classList.add('hidden');
+      }
+    })();
   });
 
   // =========================================================================

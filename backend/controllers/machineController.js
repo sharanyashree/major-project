@@ -46,17 +46,19 @@ const getBeneficiaryMonthlyDispensed = async (beneficiaryId, month, year) => {
  */
 const checkRfid = async (req, res) => {
   try {
-    const { rfidUid } = req.body;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag || req.body.rfid || req.body.uid;
 
-    if (!rfidUid) {
+    if (!rawRfid) {
       return res.status(400).json({
         success: false,
         message: 'Please provide rfidUid',
       });
     }
 
+    const rfidUid = String(rawRfid).trim();
+
     // 1. Find beneficiary by RFID UID
-    const beneficiary = await Beneficiary.findOne({ rfidUid: rfidUid.trim() })
+    const beneficiary = await Beneficiary.findOne({ rfidUid })
       .select('-password')
       .populate('assignedDistributor', 'name distributorId fpsCode district taluk status');
 
@@ -165,20 +167,20 @@ const checkRfid = async (req, res) => {
  */
 const generateOtp = async (req, res) => {
   try {
-    const { beneficiaryId } = req.body;
+    const rawId = req.body.beneficiaryId || req.body.id || req.body.userId;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag || req.body.rfid;
 
-    if (!beneficiaryId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide beneficiaryId',
-      });
+    let beneficiary = null;
+    if (rawId) {
+      beneficiary = await Beneficiary.findById(rawId);
+    } else if (rawRfid) {
+      beneficiary = await Beneficiary.findOne({ rfidUid: String(rawRfid).trim() });
     }
 
-    const beneficiary = await Beneficiary.findById(beneficiaryId);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,
-        message: 'Beneficiary not found',
+        message: 'Beneficiary not found. Please provide valid beneficiaryId or rfidUid',
       });
     }
 
@@ -199,10 +201,16 @@ const generateOtp = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: `OTP generated successfully for ${beneficiary.fullName}. Valid for 5 minutes.`,
-      otp: generatedOtp, // Included for software testing as required
+      otp: generatedOtp, // Included for testing and direct access
       expiryTime,
       beneficiaryId: beneficiary._id,
       mobileNumber: beneficiary.mobileNumber,
+      data: {
+        otp: generatedOtp,
+        expiryTime,
+        beneficiaryId: beneficiary._id,
+        mobileNumber: beneficiary.mobileNumber,
+      },
     });
   } catch (error) {
     console.error('Error generating OTP:', error);
@@ -225,20 +233,35 @@ const generateOtp = async (req, res) => {
  */
 const verifyOtp = async (req, res) => {
   try {
-    const { beneficiaryId, otp } = req.body;
+    const rawId = req.body.beneficiaryId || req.body.id || req.body.userId;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag;
+    const rawOtp = req.body.otp || req.body.otpCode || req.body.code;
 
-    if (!beneficiaryId || !otp) {
+    if ((!rawId && !rawRfid) || !rawOtp) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide both beneficiaryId and otp',
+        message: 'Please provide both beneficiaryId (or rfidUid) and otp',
+      });
+    }
+
+    let targetBeneficiaryId = rawId;
+    if (!targetBeneficiaryId && rawRfid) {
+      const b = await Beneficiary.findOne({ rfidUid: String(rawRfid).trim() });
+      if (b) targetBeneficiaryId = b._id;
+    }
+
+    if (!targetBeneficiaryId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Beneficiary not found',
       });
     }
 
     // Find latest active OTP for beneficiary & purpose Collection
     const otpRecord = await OTP.findOne({
-      beneficiary: beneficiaryId,
+      beneficiary: targetBeneficiaryId,
       otpPurpose: 'Collection',
-      otp: otp.toString().trim(),
+      otp: String(rawOtp).trim(),
     }).sort({ createdAt: -1 });
 
     if (!otpRecord) {
@@ -263,7 +286,7 @@ const verifyOtp = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'OTP verified successfully',
-      beneficiaryId,
+      beneficiaryId: targetBeneficiaryId,
     });
   } catch (error) {
     console.error('Error verifying OTP:', error);
@@ -286,16 +309,23 @@ const verifyOtp = async (req, res) => {
  */
 const checkAllocation = async (req, res) => {
   try {
-    const { beneficiaryId } = req.body;
+    const rawId = req.body.beneficiaryId || req.body.id || req.body.userId;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag;
 
-    if (!beneficiaryId) {
+    let targetBeneficiaryId = rawId;
+    if (!targetBeneficiaryId && rawRfid) {
+      const b = await Beneficiary.findOne({ rfidUid: String(rawRfid).trim() });
+      if (b) targetBeneficiaryId = b._id;
+    }
+
+    if (!targetBeneficiaryId) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide beneficiaryId',
+        message: 'Please provide beneficiaryId or rfidUid',
       });
     }
 
-    const beneficiary = await Beneficiary.findById(beneficiaryId);
+    const beneficiary = await Beneficiary.findById(targetBeneficiaryId);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,
@@ -305,7 +335,7 @@ const checkAllocation = async (req, res) => {
 
     const { month, year } = getCurrentMonthAndYear();
     const allocation = await Allocation.findOne({
-      beneficiary: beneficiaryId,
+      beneficiary: targetBeneficiaryId,
       month,
       year,
     });
@@ -324,7 +354,7 @@ const checkAllocation = async (req, res) => {
       });
     }
 
-    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(beneficiaryId, month, year);
+    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(targetBeneficiaryId, month, year);
 
     const riceRemaining = Math.max(0, allocation.riceAllocated - riceDispensed);
     const oilRemaining = Math.max(0, allocation.oilAllocated - oilDispensed);
@@ -367,12 +397,15 @@ const checkAllocation = async (req, res) => {
  */
 const validateDispense = async (req, res) => {
   try {
-    const { beneficiaryId, riceQuantity, oilQuantity, machineId } = req.body;
+    const rawId = req.body.beneficiaryId || req.body.id;
+    const rawRice = req.body.riceQuantity !== undefined ? req.body.riceQuantity : (req.body.rice !== undefined ? req.body.rice : req.body.requestedRice);
+    const rawOil = req.body.oilQuantity !== undefined ? req.body.oilQuantity : (req.body.oil !== undefined ? req.body.oil : req.body.requestedOil);
+    const machineId = req.body.machineId;
 
-    const reqRice = Number(riceQuantity || 0);
-    const reqOil = Number(oilQuantity || 0);
+    const reqRice = Number(rawRice || 0);
+    const reqOil = Number(rawOil || 0);
 
-    if (!beneficiaryId) {
+    if (!rawId) {
       return res.status(400).json({
         success: false,
         message: 'Please provide beneficiaryId',
@@ -388,7 +421,7 @@ const validateDispense = async (req, res) => {
       });
     }
 
-    const beneficiary = await Beneficiary.findById(beneficiaryId);
+    const beneficiary = await Beneficiary.findById(rawId);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,
@@ -399,7 +432,7 @@ const validateDispense = async (req, res) => {
 
     const { month, year } = getCurrentMonthAndYear();
     const allocation = await Allocation.findOne({
-      beneficiary: beneficiaryId,
+      beneficiary: rawId,
       month,
       year,
     });
@@ -412,7 +445,7 @@ const validateDispense = async (req, res) => {
       });
     }
 
-    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(beneficiaryId, month, year);
+    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(rawId, month, year);
 
     const riceRemaining = Math.max(0, allocation.riceAllocated - riceDispensed);
     const oilRemaining = Math.max(0, allocation.oilAllocated - oilDispensed);
@@ -442,7 +475,7 @@ const validateDispense = async (req, res) => {
       message: 'Dispense validation successful. Machine authorized to dispense.',
       valid: true,
       data: {
-        beneficiaryId,
+        beneficiaryId: rawId,
         riceQuantity: reqRice,
         oilQuantity: reqOil,
         machineId: machineId || 'SRM-CENTER-001',
@@ -469,19 +502,23 @@ const validateDispense = async (req, res) => {
  */
 const completeDispense = async (req, res) => {
   try {
-    const { beneficiaryId, riceQuantity, oilQuantity, machineId, distributorId } = req.body;
+    const rawId = req.body.beneficiaryId || req.body.id;
+    const rawRice = req.body.riceQuantity !== undefined ? req.body.riceQuantity : (req.body.rice !== undefined ? req.body.rice : req.body.dispensedRice);
+    const rawOil = req.body.oilQuantity !== undefined ? req.body.oilQuantity : (req.body.oil !== undefined ? req.body.oil : req.body.dispensedOil);
+    const machineId = req.body.machineId;
+    const distributorId = req.body.distributorId;
 
-    const reqRice = Number(riceQuantity || 0);
-    const reqOil = Number(oilQuantity || 0);
+    const reqRice = Number(rawRice || 0);
+    const reqOil = Number(rawOil || 0);
 
-    if (!beneficiaryId) {
+    if (!rawId) {
       return res.status(400).json({
         success: false,
         message: 'Please provide beneficiaryId',
       });
     }
 
-    const beneficiary = await Beneficiary.findById(beneficiaryId);
+    const beneficiary = await Beneficiary.findById(rawId);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,

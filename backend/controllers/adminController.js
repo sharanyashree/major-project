@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Distributor = require('../models/Distributor');
 const Beneficiary = require('../models/Beneficiary');
 const Inventory = require('../models/Inventory');
@@ -434,7 +435,10 @@ const dispatchRice = async (req, res) => {
       });
     }
 
-    const distributor = await Distributor.findOne({ distributorId });
+    const distQuery = mongoose.isValidObjectId(distributorId)
+      ? { $or: [{ _id: distributorId }, { distributorId: String(distributorId).trim().toUpperCase() }] }
+      : { distributorId: String(distributorId).trim().toUpperCase() };
+    const distributor = await Distributor.findOne(distQuery);
     if (!distributor) {
       return res.status(404).json({
         success: false,
@@ -536,7 +540,10 @@ const dispatchOil = async (req, res) => {
       });
     }
 
-    const distributor = await Distributor.findOne({ distributorId });
+    const distQuery = mongoose.isValidObjectId(distributorId)
+      ? { $or: [{ _id: distributorId }, { distributorId: String(distributorId).trim().toUpperCase() }] }
+      : { distributorId: String(distributorId).trim().toUpperCase() };
+    const distributor = await Distributor.findOne(distQuery);
     if (!distributor) {
       return res.status(404).json({
         success: false,
@@ -834,9 +841,10 @@ const sendNotificationToDistributor = async (req, res) => {
       });
     }
 
-   const distributor = await Distributor.findOne({
-    distributorId
-});
+    const distQuery = mongoose.isValidObjectId(distributorId)
+      ? { $or: [{ _id: distributorId }, { distributorId: String(distributorId).trim().toUpperCase() }] }
+      : { distributorId: String(distributorId).trim().toUpperCase() };
+    const distributor = await Distributor.findOne(distQuery);
     if (!distributor) {
       return res.status(404).json({
         success: false,
@@ -931,7 +939,10 @@ const sendNotificationToBeneficiary = async (req, res) => {
       });
     }
 
-    const beneficiary = await Beneficiary.findById(beneficiaryId);
+    const benQuery = mongoose.isValidObjectId(beneficiaryId)
+      ? { $or: [{ _id: beneficiaryId }, { rationCardNumber: String(beneficiaryId).trim() }] }
+      : { rationCardNumber: String(beneficiaryId).trim() };
+    const beneficiary = await Beneficiary.findOne(benQuery);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,

@@ -7,6 +7,18 @@ const distributorSchema = new mongoose.Schema(
       required: [true, 'Distributor name is required'],
       trim: true,
     },
+    fullName: {
+      type: String,
+      trim: true,
+    },
+    storeName: {
+      type: String,
+      trim: true,
+    },
+    email: {
+      type: String,
+      trim: true,
+    },
     mobileNumber: {
       type: String,
       required: [true, 'Mobile number is required'],

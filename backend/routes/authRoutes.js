@@ -6,6 +6,7 @@ const {
   beneficiaryLogin,
   beneficiaryRegister,
   distributorRegister,
+  logout,
 } = require('../controllers/authController');
 
 /**
@@ -42,5 +43,12 @@ router.post('/beneficiary/register', beneficiaryRegister);
  * @access  Public
  */
 router.post('/distributor/register', distributorRegister);
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout User session
+ * @access  Public
+ */
+router.post('/logout', logout);
 
 module.exports = router;

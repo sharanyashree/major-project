@@ -180,8 +180,8 @@
           <!-- Welcome Banner -->
           <div class="fps-welcome-banner">
             <div class="fps-welcome-text">
-              <h2>Welcome, <span id="welcomeUserName">Anand Kumar</span></h2>
-              <p>Ration Card: <strong>RC-884210</strong> • Assigned Shop: <strong>Sri Annapurna Fair Price Store (FPS-4201)</strong></p>
+              <h2>Welcome, <span id="welcomeUserName">Loading...</span></h2>
+              <p>Ration Card: <strong id="welcomeCardNum">Loading...</strong> • Assigned Shop: <strong id="welcomeFpsShop">Loading...</strong></p>
             </div>
             <div class="pos-machine-status">
               <span class="status-dot active"></span>
@@ -196,9 +196,9 @@
               <div class="card-header flex-header">
                 <div>
                   <h3 class="card-title">Current Month Allocation</h3>
-                  <p class="card-subtitle">Official quota sanctioned for August 2026</p>
+                  <p class="card-subtitle" id="dashAllocSubtitle">Official quota sanctioned for current cycle</p>
                 </div>
-                <span class="badge badge-primary">August 2026</span>
+                <span class="badge badge-primary" id="dashAllocBadge">Current Month</span>
               </div>
 
               <div class="allocation-items-grid">
@@ -208,7 +208,7 @@
                   <div class="commodity-details">
                     <span class="commodity-label">Rice</span>
                     <div>
-                      <span class="commodity-value">20</span>
+                      <span class="commodity-value" id="dashRiceVal">--</span>
                       <span class="commodity-unit">Kg</span>
                     </div>
                   </div>
@@ -220,7 +220,7 @@
                   <div class="commodity-details">
                     <span class="commodity-label">Oil</span>
                     <div>
-                      <span class="commodity-value">2</span>
+                      <span class="commodity-value" id="dashOilVal">--</span>
                       <span class="commodity-unit">Ltr</span>
                     </div>
                   </div>
@@ -232,36 +232,36 @@
             <div class="card">
               <div class="card-header flex-header">
                 <div>
-                  <h3 class="card-title">August Collection Status</h3>
+                  <h3 class="card-title" id="dashStatusTitle">Monthly Collection Status</h3>
                   <p class="card-subtitle">Transaction status for current cycle</p>
                 </div>
-                <span class="badge badge-success" id="dashStatusBadge">Collected</span>
+                <span class="badge badge-success" id="dashStatusBadge">Pending</span>
               </div>
 
-              <div class="status-banner status-collected" id="dashStatusBanner">
-                <div class="status-badge-title">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  <span>Quota Successfully Collected</span>
+              <div class="status-banner status-pending" id="dashStatusBanner">
+                <div class="status-badge-title" id="dashStatusBadgeTitle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span id="dashStatusBannerText">Quota Allocation Available</span>
                 </div>
-                <span style="font-weight: 700; font-size: 0.85rem;">August 2026</span>
+                <span style="font-weight: 700; font-size: 0.85rem;" id="dashStatusMonth">Current Month</span>
               </div>
 
               <div class="status-detail-list">
                 <div class="status-detail-item">
                   <span class="status-detail-label">Collection Date & Time</span>
-                  <span class="status-detail-val">02 Aug 2026 at 09:15 AM</span>
+                  <span class="status-detail-val" id="dashCollectDateTime">Pending Collection</span>
                 </div>
                 <div class="status-detail-item">
                   <span class="status-detail-label">Fair Price Shop</span>
-                  <span class="status-detail-val">Sri Annapurna Store (FPS-4201)</span>
+                  <span class="status-detail-val" id="dashCollectShop">Loading...</span>
                 </div>
                 <div class="status-detail-item">
                   <span class="status-detail-label">e-POS Device Token</span>
-                  <span class="status-detail-val">EPOS-BLR-042</span>
+                  <span class="status-detail-val" id="dashCollectDevice">EPOS-ONLINE-01</span>
                 </div>
                 <div class="status-detail-item">
                   <span class="status-detail-label">Biometric Verification</span>
-                  <span class="status-detail-val" style="color: var(--color-success-text); font-weight: 800;">Aadhaar Biometric Matched</span>
+                  <span class="status-detail-val" id="dashCollectBiometric" style="color: var(--color-success-text); font-weight: 800;">Aadhaar Biometric Matched</span>
                 </div>
               </div>
             </div>
@@ -276,19 +276,19 @@
             <div class="status-detail-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
               <div class="status-detail-item">
                 <span class="status-detail-label">Shop Name & ID</span>
-                <span class="status-detail-val">Sri Annapurna Store (FPS-4201)</span>
+                <span class="status-detail-val" id="dashFpsShopName">Loading...</span>
               </div>
               <div class="status-detail-item">
                 <span class="status-detail-label">Licensee Name</span>
-                <span class="status-detail-val">Ramesh Gowda</span>
+                <span class="status-detail-val" id="dashFpsLicensee">Loading...</span>
               </div>
               <div class="status-detail-item">
                 <span class="status-detail-label">Location Address</span>
-                <span class="status-detail-val">#12, Market Road, Yeshwanthpur, Bangalore - 560022</span>
+                <span class="status-detail-val" id="dashFpsAddress">Loading...</span>
               </div>
               <div class="status-detail-item">
-                <span class="status-detail-label">Operating Hours</span>
-                <span class="status-detail-val">08:00 AM – 01:00 PM | 04:00 PM – 08:00 PM</span>
+                <span class="status-detail-label">Operating Contact</span>
+                <span class="status-detail-val" id="dashFpsContact">Loading...</span>
               </div>
             </div>
           </div>
@@ -300,9 +300,9 @@
             <div class="card-header flex-header">
               <div>
                 <h3 class="card-title">My Monthly Allocation</h3>
-                <p class="card-subtitle">Official Government Monthly Ration Entitlement for August 2026</p>
+                <p class="card-subtitle" id="allocSectionSubtitle">Official Government Monthly Ration Entitlement</p>
               </div>
-              <span class="badge badge-primary">August 2026</span>
+              <span class="badge badge-primary" id="allocSectionBadge">Current Month</span>
             </div>
 
             <!-- Primary Allocation Card displaying ONLY requested commodities -->
@@ -313,7 +313,7 @@
                 <div class="commodity-details">
                   <span class="commodity-label" style="font-size: 0.85rem;">Rice Quantity</span>
                   <div>
-                    <span class="commodity-value" style="font-size: 1.8rem;">20</span>
+                    <span class="commodity-value" id="allocRiceVal" style="font-size: 1.8rem;">--</span>
                     <span class="commodity-unit" style="font-size: 1rem;">Kg</span>
                   </div>
                 </div>
@@ -325,7 +325,7 @@
                 <div class="commodity-details">
                   <span class="commodity-label" style="font-size: 0.85rem;">Oil Quantity</span>
                   <div>
-                    <span class="commodity-value" style="font-size: 1.8rem;">2</span>
+                    <span class="commodity-value" id="allocOilVal" style="font-size: 1.8rem;">--</span>
                     <span class="commodity-unit" style="font-size: 1rem;">Ltr</span>
                   </div>
                 </div>
@@ -337,24 +337,24 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">Government Entitlement Policy</h3>
-              <p class="card-subtitle">Priority Household (PHH) Allocation Norms</p>
+              <p class="card-subtitle" id="allocPolicySubtitle">Priority Household (PHH) Allocation Norms</p>
             </div>
             <div class="status-detail-list">
               <div class="status-detail-item">
                 <span class="status-detail-label">Beneficiary Category</span>
-                <span class="status-detail-val">Priority Household (PHH)</span>
+                <span class="status-detail-val" id="allocPolicyCategory">Priority Household (PHH)</span>
               </div>
               <div class="status-detail-item">
                 <span class="status-detail-label">Total Registered Household Members</span>
-                <span class="status-detail-val">4 Active Members</span>
+                <span class="status-detail-val" id="allocPolicyMembers">-- Active Members</span>
               </div>
               <div class="status-detail-item">
                 <span class="status-detail-label">Foodgrains Entitlement Rate</span>
-                <span class="status-detail-val">5 Kg Foodgrains per member (5 Kg x 4 Members = 20 Kg Rice)</span>
+                <span class="status-detail-val" id="allocPolicyRate">5 Kg Foodgrains per member</span>
               </div>
               <div class="status-detail-item">
                 <span class="status-detail-label">Essential Commodity Rates</span>
-                <span class="status-detail-val">Rice @ ₹0/Kg | Edible Oil @ ₹25/Ltr</span>
+                <span class="status-detail-val" id="allocPolicyCommodityRates">Rice @ ₹0/Kg | Edible Oil @ ₹25/Ltr</span>
               </div>
             </div>
           </div>
@@ -382,7 +382,7 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Month</th>
+                    <th>Month / Reference</th>
                     <th>Rice</th>
                     <th>Oil</th>
                     <th>Collection Date</th>
@@ -391,46 +391,7 @@
                   </tr>
                 </thead>
                 <tbody id="historyTableBody">
-                  <tr>
-                    <td><strong>August 2026</strong></td>
-                    <td>20 Kg</td>
-                    <td>2 Ltr</td>
-                    <td>02 Aug 2026</td>
-                    <td>09:15 AM</td>
-                    <td><span class="badge badge-success">Collected</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>July 2026</strong></td>
-                    <td>20 Kg</td>
-                    <td>2 Ltr</td>
-                    <td>04 Jul 2026</td>
-                    <td>10:30 AM</td>
-                    <td><span class="badge badge-success">Collected</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>June 2026</strong></td>
-                    <td>20 Kg</td>
-                    <td>2 Ltr</td>
-                    <td>03 Jun 2026</td>
-                    <td>11:10 AM</td>
-                    <td><span class="badge badge-success">Collected</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>May 2026</strong></td>
-                    <td>20 Kg</td>
-                    <td>2 Ltr</td>
-                    <td>05 May 2026</td>
-                    <td>02:45 PM</td>
-                    <td><span class="badge badge-success">Collected</span></td>
-                  </tr>
-                  <tr>
-                    <td><strong>April 2026</strong></td>
-                    <td>20 Kg</td>
-                    <td>2 Ltr</td>
-                    <td>02 Apr 2026</td>
-                    <td>09:00 AM</td>
-                    <td><span class="badge badge-success">Collected</span></td>
-                  </tr>
+                  <!-- Dynamically populated via JS -->
                 </tbody>
               </table>
             </div>
@@ -477,32 +438,32 @@
               <div class="info-card-list">
                 <div class="info-card-item">
                   <div class="info-card-label">Head of Household</div>
-                  <div class="info-card-val" id="profileHeadName">Anand Kumar</div>
+                  <div class="info-card-val" id="profileHeadName">Loading...</div>
                 </div>
 
                 <div class="info-card-item">
                   <div class="info-card-label">Ration Card Number</div>
-                  <div class="info-card-val" id="profileCardNum">RC-884210</div>
+                  <div class="info-card-val" id="profileCardNum">Loading...</div>
                 </div>
 
                 <div class="info-card-item">
                   <div class="info-card-label">Card Category</div>
-                  <div class="info-card-val">Priority Household (PHH)</div>
+                  <div class="info-card-val" id="profileCategory">Priority Household (PHH)</div>
                 </div>
 
                 <div class="info-card-item">
                   <div class="info-card-label">Mobile Number</div>
-                  <div class="info-card-val">+91 9876543210</div>
+                  <div class="info-card-val" id="profileMobile">Loading...</div>
                 </div>
 
                 <div class="info-card-item">
-                  <div class="info-card-label">Aadhaar Reference</div>
-                  <div class="info-card-val">XXXX-XXXX-4821 (Verified)</div>
+                  <div class="info-card-label">Aadhaar / RFID Reference</div>
+                  <div class="info-card-val" id="profileAadhaar">Linked & Verified</div>
                 </div>
 
                 <div class="info-card-item">
                   <div class="info-card-label">Residential Address</div>
-                  <div class="info-card-val">#42, 3rd Cross, Pipeline Road, Yeshwanthpur, Bangalore - 560022</div>
+                  <div class="info-card-val" id="profileAddress">Loading...</div>
                 </div>
               </div>
             </div>
@@ -510,8 +471,8 @@
             <!-- Right Family Members Table -->
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Registered Family Members (4)</h3>
-                <p class="card-subtitle">Aadhaar verified household members attached to RC-884210</p>
+                <h3 class="card-title" id="familyCardTitle">Registered Family Members</h3>
+                <p class="card-subtitle" id="familyCardSubtitle">Aadhaar verified household members</p>
               </div>
 
               <div class="table-responsive">
@@ -526,39 +487,8 @@
                       <th>e-KYC Status</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td><strong>Anand Kumar</strong></td>
-                      <td>Head</td>
-                      <td>Male</td>
-                      <td>42 Yrs</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td>2</td>
-                      <td><strong>Sunita Kumar</strong></td>
-                      <td>Spouse</td>
-                      <td>Female</td>
-                      <td>38 Yrs</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td>3</td>
-                      <td><strong>Rohan Kumar</strong></td>
-                      <td>Son</td>
-                      <td>Male</td>
-                      <td>16 Yrs</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
-                    <tr>
-                      <td>4</td>
-                      <td><strong>Priya Kumar</strong></td>
-                      <td>Daughter</td>
-                      <td>Female</td>
-                      <td>12 Yrs</td>
-                      <td><span class="badge badge-success">Verified</span></td>
-                    </tr>
+                  <tbody id="familyMembersTableBody">
+                    <!-- Dynamically populated via JS -->
                   </tbody>
                 </table>
               </div>
@@ -583,7 +513,7 @@
 
                 <div class="form-group">
                   <label class="form-label" for="newPassInput">New Password</label>
-                  <input type="password" id="newPassInput" class="form-input" placeholder="Enter new strong password" required>
+                  <input type="password" id="newPassInput" class="form-input" placeholder="Enter new strong password (min 6 chars)" required>
                 </div>
 
                 <div class="form-group">
@@ -616,7 +546,7 @@
       <div class="modal-body" style="padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <span class="badge badge-primary" id="notifDetailCategory">Ration Notice</span>
-          <span style="font-size: 0.78rem; color: var(--color-text-muted);" id="notifDetailTime">02 Aug 2026, 10:00 AM</span>
+          <span style="font-size: 0.78rem; color: var(--color-text-muted);" id="notifDetailTime">Today</span>
         </div>
         <h4 id="notifDetailHeading" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--color-primary);"></h4>
         <p id="notifDetailBody" style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 16px;"></p>
@@ -632,6 +562,7 @@
   </div>
 
   <!-- JavaScript Entry Point -->
-  <script src="beneficiary-dashboard.js"></script>
+  <script type="module" src="api.js"></script>
+  <script type="module" src="beneficiary-dashboard.js"></script>
 </body>
 </html>

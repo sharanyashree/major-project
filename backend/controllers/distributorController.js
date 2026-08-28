@@ -46,7 +46,9 @@ const getProfile = async (req, res) => {
  */
 const getInventory = async (req, res) => {
   try {
-    let inventory = await Inventory.findOne({ distributor: req.user.id });
+    let inventory = await Inventory.findOne({
+      $or: [{ distributor: req.user.id }, { distributorId: req.user.id }],
+    });
     if (!inventory) {
       inventory = await Inventory.create({
         distributor: req.user.id,
@@ -59,6 +61,7 @@ const getInventory = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: inventory,
+      inventory,
     });
   } catch (error) {
     console.error('Error fetching inventory:', error);
@@ -81,7 +84,9 @@ const getDashboardSummary = async (req, res) => {
 
     // Profile & Inventory
     const distributor = await Distributor.findById(distributorId).select('-password');
-    let inventory = await Inventory.findOne({ distributor: distributorId });
+    let inventory = await Inventory.findOne({
+      $or: [{ distributor: distributorId }, { distributorId: distributorId }],
+    });
     if (!inventory) {
       inventory = { riceStock: 0, oilStock: 0 };
     }
@@ -117,7 +122,7 @@ const getDashboardSummary = async (req, res) => {
     // Unread Notifications Count
     const unreadNotificationsCount = await Notification.countDocuments({
       receiverId: distributorId,
-      isRead: false,
+      readStatus: false,
     });
 
     return res.status(200).json({
@@ -128,8 +133,11 @@ const getDashboardSummary = async (req, res) => {
           riceStock: inventory.riceStock,
           oilStock: inventory.oilStock,
         },
+        totalBeneficiaries,
+        assignedBeneficiariesCount: totalBeneficiaries,
         metrics: {
           totalBeneficiaries,
+          assignedBeneficiariesCount: totalBeneficiaries,
           todayCollectionsCount,
           todayRiceDistributed,
           todayOilDistributed,
@@ -186,9 +194,14 @@ const getAssignedBeneficiaries = async (req, res) => {
  */
 const searchBeneficiaryByRationCard = async (req, res) => {
   try {
-    const { rationCardNumber } = req.query;
+    const rawRationCard =
+      req.query.rationCardNumber ||
+      req.query.rationCard ||
+      req.query.q ||
+      req.query.cardNo ||
+      req.query.card;
 
-    if (!rationCardNumber) {
+    if (!rawRationCard || !String(rawRationCard).trim()) {
       return res.status(400).json({
         success: false,
         message: 'Please provide rationCardNumber query parameter',
@@ -197,7 +210,7 @@ const searchBeneficiaryByRationCard = async (req, res) => {
 
     const beneficiary = await Beneficiary.findOne({
       assignedDistributor: req.user.id,
-      rationCardNumber: rationCardNumber.trim(),
+      rationCardNumber: String(rawRationCard).trim().toUpperCase(),
     }).select('-password');
 
     if (!beneficiary) {
@@ -275,18 +288,44 @@ const getBeneficiaryDetails = async (req, res) => {
  */
 const allocateRation = async (req, res) => {
   try {
-    const { beneficiaryId, riceAllocated, oilAllocated, month, year } = req.body;
+    const {
+      beneficiaryId,
+      beneficiary: beneficiaryAlias,
+      riceAllocated,
+      rice,
+      oilAllocated,
+      oil,
+      month,
+      year,
+      collectionStatus,
+      status,
+    } = req.body;
 
-    if (!beneficiaryId || riceAllocated === undefined || oilAllocated === undefined) {
+    const targetBeneficiaryId = beneficiaryId || beneficiaryAlias;
+    const finalRice = riceAllocated !== undefined ? Number(riceAllocated) : (rice !== undefined ? Number(rice) : undefined);
+    const finalOil = oilAllocated !== undefined ? Number(oilAllocated) : (oil !== undefined ? Number(oil) : undefined);
+
+    if (!targetBeneficiaryId || finalRice === undefined || finalOil === undefined || isNaN(finalRice) || isNaN(finalOil) || finalRice < 0 || finalOil < 0) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide beneficiaryId, riceAllocated, and oilAllocated',
+        message: 'Please provide valid non-negative numbers for riceAllocated and oilAllocated',
+      });
+    }
+
+    // Check available inventory for this distributor
+    const inv = await Inventory.findOne({
+      $or: [{ distributor: req.user.id }, { distributorId: req.user.id }],
+    });
+    if (inv && (finalRice > inv.riceStock || finalOil > inv.oilStock)) {
+      return res.status(400).json({
+        success: false,
+        message: `Allocated quantity exceeds available inventory. Available: ${inv.riceStock}kg Rice, ${inv.oilStock}L Oil`,
       });
     }
 
     // Ensure beneficiary is assigned to this distributor
     const beneficiary = await Beneficiary.findOne({
-      _id: beneficiaryId,
+      _id: targetBeneficiaryId,
       assignedDistributor: req.user.id,
     });
 
@@ -297,38 +336,69 @@ const allocateRation = async (req, res) => {
       });
     }
 
-    const currentMonth = month ? month.trim() : new Date().toLocaleString('default', { month: 'long' });
+    const currentMonth = month ? month.trim() : new Date().toLocaleString('en-US', { month: 'long' });
     const currentYear = year ? Number(year) : new Date().getFullYear();
+    const finalStatus = collectionStatus || status || 'Pending';
 
     // Check if allocation already exists for this month/year
     let allocation = await Allocation.findOne({
-      beneficiary: beneficiaryId,
+      beneficiary: targetBeneficiaryId,
       month: currentMonth,
       year: currentYear,
     });
 
+    let isNew = false;
     if (allocation) {
       // Update existing allocation
-      allocation.riceAllocated = Number(riceAllocated);
-      allocation.oilAllocated = Number(oilAllocated);
+      allocation.riceAllocated = finalRice;
+      allocation.oilAllocated = finalOil;
       allocation.allocatedBy = req.user.id;
       allocation.distributor = req.user.id;
+      if (collectionStatus || status) {
+        allocation.collectionStatus = finalStatus;
+      }
       await allocation.save();
     } else {
       // Create new allocation
+      isNew = true;
       allocation = await Allocation.create({
-        beneficiary: beneficiaryId,
+        beneficiary: targetBeneficiaryId,
         distributor: req.user.id,
         allocatedBy: req.user.id,
-        riceAllocated: Number(riceAllocated),
-        oilAllocated: Number(oilAllocated),
+        riceAllocated: finalRice,
+        oilAllocated: finalOil,
         month: currentMonth,
         year: currentYear,
-        status: 'Pending',
+        collectionStatus: finalStatus,
       });
     }
 
-    return res.status(200).json({
+    // Deduct stock from Inventory and record transaction only if explicitly collected
+    if (finalStatus === 'Collected') {
+      const inv = await Inventory.findOne({
+        $or: [{ distributor: req.user.id }, { distributorId: req.user.id }],
+      });
+      if (inv) {
+        inv.riceStock = Math.max(0, inv.riceStock - finalRice);
+        inv.oilStock = Math.max(0, inv.oilStock - finalOil);
+        inv.lastUpdated = new Date();
+        await inv.save();
+      }
+
+      // Record distribution transaction
+      await Transaction.create({
+        beneficiary: targetBeneficiaryId,
+        distributor: req.user.id,
+        riceDispensed: finalRice,
+        oilDispensed: finalOil,
+        date: new Date(),
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        status: 'Successful',
+        otpVerified: true,
+      });
+    }
+
+    return res.status(isNew ? 201 : 200).json({
       success: true,
       message: `Monthly allocation saved for beneficiary ${beneficiary.fullName} (${currentMonth} ${currentYear})`,
       data: allocation,
@@ -351,7 +421,7 @@ const allocateRation = async (req, res) => {
 const updateAllocation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { riceAllocated, oilAllocated, status } = req.body;
+    const { riceAllocated, rice, oilAllocated, oil, collectionStatus, status } = req.body;
 
     const allocation = await Allocation.findById(id);
 
@@ -371,8 +441,13 @@ const updateAllocation = async (req, res) => {
     }
 
     if (riceAllocated !== undefined) allocation.riceAllocated = Number(riceAllocated);
+    else if (rice !== undefined) allocation.riceAllocated = Number(rice);
+
     if (oilAllocated !== undefined) allocation.oilAllocated = Number(oilAllocated);
-    if (status) allocation.status = status;
+    else if (oil !== undefined) allocation.oilAllocated = Number(oil);
+
+    if (collectionStatus) allocation.collectionStatus = collectionStatus;
+    else if (status) allocation.collectionStatus = status;
 
     await allocation.save();
 
@@ -485,7 +560,23 @@ const getMonthlyTransactions = async (req, res) => {
     const { month, year } = req.query;
 
     const currentYear = year ? parseInt(year, 10) : new Date().getFullYear();
-    const currentMonth = month ? parseInt(month, 10) - 1 : new Date().getMonth();
+    let currentMonth = new Date().getMonth();
+
+    if (month !== undefined && month !== null && month !== '') {
+      const parsedNum = parseInt(month, 10);
+      if (!isNaN(parsedNum)) {
+        currentMonth = parsedNum >= 1 && parsedNum <= 12 ? parsedNum - 1 : parsedNum;
+      } else {
+        const monthNames = [
+          'january', 'february', 'march', 'april', 'may', 'june',
+          'july', 'august', 'september', 'october', 'november', 'december'
+        ];
+        const idx = monthNames.indexOf(month.toString().toLowerCase().trim());
+        if (idx !== -1) {
+          currentMonth = idx;
+        }
+      }
+    }
 
     const startDate = new Date(currentYear, currentMonth, 1);
     const endDate = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
@@ -701,6 +792,107 @@ const getReceivedNotifications = async (req, res) => {
   }
 };
 
+/**
+ * @desc    View unread notifications received
+ * @route   GET /api/distributor/notifications/unread
+ * @access  Private (Distributor)
+ */
+const getUnreadNotifications = async (req, res) => {
+  try {
+    const unreadNotifications = await Notification.find({
+      receiverId: req.user.id,
+      receiverRole: 'Distributor',
+      readStatus: false,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: unreadNotifications.length,
+      data: unreadNotifications,
+    });
+  } catch (error) {
+    console.error('Error fetching unread notifications:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve unread notifications',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Mark notification as Read
+ * @route   PATCH /api/distributor/notifications/:id/read
+ * @access  Private (Distributor)
+ */
+const markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const notification = await Notification.findOne({
+      _id: id,
+      receiverId: req.user.id,
+      receiverRole: 'Distributor',
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found',
+      });
+    }
+
+    notification.readStatus = true;
+    await notification.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Notification marked as read',
+      data: notification,
+    });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update notification',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Mark all notifications as Read
+ * @route   PATCH /api/distributor/notifications/read-all
+ * @access  Private (Distributor)
+ */
+const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const result = await Notification.updateMany(
+      {
+        receiverId: req.user.id,
+        receiverRole: 'Distributor',
+        readStatus: false,
+      },
+      {
+        $set: { readStatus: true },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to mark all notifications as read',
+      error: error.message,
+    });
+  }
+};
+
 // ==========================================
 // 6. PROFILE
 // ==========================================
@@ -712,7 +904,7 @@ const getReceivedNotifications = async (req, res) => {
  */
 const updateProfile = async (req, res) => {
   try {
-    const { name, mobileNumber, fpsCode, district, taluk } = req.body;
+    const { name, fullName, storeName, email, mobileNumber, fpsCode, district, taluk } = req.body;
 
     const distributor = await Distributor.findById(req.user.id);
     if (!distributor) {
@@ -722,7 +914,16 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    if (name) distributor.name = name.trim();
+    if (fullName) {
+      distributor.fullName = fullName.trim();
+      distributor.name = fullName.trim();
+    } else if (name) {
+      distributor.name = name.trim();
+      distributor.fullName = name.trim();
+    }
+
+    if (storeName) distributor.storeName = storeName.trim();
+    if (email) distributor.email = email.trim();
     if (mobileNumber) distributor.mobileNumber = mobileNumber.trim();
     if (fpsCode) distributor.fpsCode = fpsCode.trim();
     if (district) distributor.district = district.trim();
@@ -736,6 +937,9 @@ const updateProfile = async (req, res) => {
       data: {
         _id: distributor._id,
         name: distributor.name,
+        fullName: distributor.fullName || distributor.name,
+        storeName: distributor.storeName,
+        email: distributor.email,
         distributorId: distributor.distributorId,
         mobileNumber: distributor.mobileNumber,
         fpsCode: distributor.fpsCode,
@@ -837,6 +1041,9 @@ module.exports = {
   // Notifications
   sendNotificationToAssignedBeneficiaries,
   getReceivedNotifications,
+  getUnreadNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 
   // Profile
   updateProfile,

@@ -25,6 +25,9 @@ const {
   // Notifications
   sendNotificationToAssignedBeneficiaries,
   getReceivedNotifications,
+  getUnreadNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 
   // Profile
   updateProfile,
@@ -67,6 +70,9 @@ router.get('/transactions/search', searchTransactionsByBeneficiary);
 // ==========================================
 router.post('/notifications/beneficiaries', sendNotificationToAssignedBeneficiaries);
 router.get('/notifications', getReceivedNotifications);
+router.get('/notifications/unread', getUnreadNotifications);
+router.patch('/notifications/read-all', markAllNotificationsAsRead);
+router.patch('/notifications/:id/read', markNotificationAsRead);
 
 // ==========================================
 // 6. PROFILE ROUTES

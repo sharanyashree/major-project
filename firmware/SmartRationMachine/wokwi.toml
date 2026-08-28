@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = "SmartRationMachine.ino"
+elf = "build/esp32.esp32.esp32/SmartRationMachine.ino.elf"

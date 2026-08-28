@@ -2,8 +2,10 @@
  * Ration Distribution System - User Registration Page Logic
  * Pure Vanilla JavaScript (ES6+)
  * 
- * Clean, modular code ready for Node.js + MongoDB API integration.
+ * Connected to Express + MongoDB Backend API Endpoints
  */
+
+import { authApi } from './api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
@@ -320,59 +322,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =======================================================================
-    // VALID REGISTRATION DATA (Ready for POST /api/auth/register-user)
+    // REAL BACKEND REGISTRATION (POST /api/auth/beneficiary/register)
     // =======================================================================
     const userRegistrationPayload = {
-      role: 'user',
       fullName: fullNameVal,
       rationCardNumber: rationCardVal.toUpperCase(),
       mobileNumber: mobileVal,
-      familyMembers: familyVal,
+      familyMemberCount: familyVal,
       district: districtVal,
       taluk: talukVal,
       village: villageVal,
       address: addressVal,
-      password: passwordVal,
-      registeredAt: new Date().toISOString()
+      password: passwordVal
     };
-
-    console.log('Registering User payload:', userRegistrationPayload);
 
     // Loading State UI
     registerBtn.disabled = true;
     btnText.textContent = 'Creating Account...';
     spinner.classList.remove('hidden');
 
-    // Simulate Server API Response
-    setTimeout(() => {
-      registerBtn.disabled = false;
-      btnText.textContent = 'Register';
-      spinner.classList.add('hidden');
+    (async () => {
+      try {
+        const response = await authApi.registerBeneficiary(userRegistrationPayload);
 
-      // Save user details to localStorage for persistent state simulation
-      const existingUsers = JSON.parse(localStorage.getItem('ration_registered_users') || '[]');
-      existingUsers.push(userRegistrationPayload);
-      localStorage.setItem('ration_registered_users', JSON.stringify(existingUsers));
+        showAlert(response.message || 'Registration successful! Account has been created.', 'success');
 
-      showAlert('Registration successful! Account has been created.', 'success');
+        openModal(
+          'Account Registered Successfully!',
+          `
+            <p style="margin-bottom: 12px;">Welcome <strong>${fullNameVal}</strong>!</p>
+            <p style="margin-bottom: 8px;">Your Ration Card account <strong>${rationCardVal.toUpperCase()}</strong> has been successfully registered.</p>
+            <ul style="padding-left: 20px; margin-bottom: 16px; font-size: 0.875rem; color: #4B5563;">
+              <li><strong>Ration Card No:</strong> ${rationCardVal.toUpperCase()}</li>
+              <li><strong>Mobile:</strong> ${mobileVal}</li>
+              <li><strong>Family Count:</strong> ${familyVal} Members</li>
+              <li><strong>Location:</strong> ${villageVal}, ${talukVal}, ${districtVal}</li>
+            </ul>
+            <p style="font-size: 0.85rem; color: #6B7280;">You can now login using your Ration Card Number and Password.</p>
+          `
+        );
 
-      openModal(
-        'Account Registered Successfully!',
-        `
-          <p style="margin-bottom: 12px;">Welcome <strong>${fullNameVal}</strong>!</p>
-          <p style="margin-bottom: 8px;">Your Ration Card account <strong>${rationCardVal.toUpperCase()}</strong> has been successfully registered.</p>
-          <ul style="padding-left: 20px; margin-bottom: 16px; font-size: 0.875rem; color: #4B5563;">
-            <li><strong>Mobile:</strong> ${mobileVal}</li>
-            <li><strong>Family Count:</strong> ${familyVal} Members</li>
-            <li><strong>Location:</strong> ${villageVal}, ${talukVal}, ${districtVal}</li>
-          </ul>
-          <p style="font-size: 0.85rem; color: #6B7280;">You can now login using your Ration Card Number and Password.</p>
-        `
-      );
-
-      // Reset form
-      registerForm.reset();
-    }, 1200);
+        // Reset form
+        registerForm.reset();
+      } catch (err) {
+        const errorMsg = err.message || 'Registration failed. Please check your information and try again.';
+        showAlert(errorMsg, 'error');
+        triggerShake();
+      } finally {
+        registerBtn.disabled = false;
+        btnText.textContent = 'Register';
+        spinner.classList.add('hidden');
+      }
+    })();
   });
 
   // =========================================================================

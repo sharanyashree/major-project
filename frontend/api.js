@@ -3,8 +3,8 @@
  * for Ration Distribution System Frontend.
  */
 
-// Determine base API URL (relative or fallback)
-const API_BASE_URL = window.API_BASE_URL || '';
+// Determine base API URL (targeting backend on port 5000)
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:5000';
 
 const AUTH_STORAGE_KEY = 'ration_auth_session';
 

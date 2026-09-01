@@ -43,6 +43,13 @@ enum DeviceState {
 DeviceState currentState = STATE_IDLE;
 uint32_t lastHealthPingMs = 0;
 
+// Runtime beneficiary variables for most recently scanned RFID card
+String currentBeneficiaryId = "";
+String currentFullName = "";
+String currentRationCardNumber = "";
+float currentRiceQuota = 0.0;
+float currentOilQuota = 0.0;
+
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
@@ -118,9 +125,14 @@ bool checkBackendStatus() {
 
 /**
  * 1. POST /api/machine/rfid
- * Sends scanned RFID UID to identify the beneficiary.
+ * Sends scanned RFID UID to identify the beneficiary and retrieve allocation quotas.
  */
-bool apiAuthenticateRfid(const String& uid, String& outBeneficiaryId, String& outBeneficiaryName) {
+bool apiAuthenticateRfid(const String& uid,
+                         String& outBeneficiaryId,
+                         String& outFullName,
+                         String& outRationCardNumber,
+                         float& outRiceQuota,
+                         float& outOilQuota) {
   if (WiFi.status() != WL_CONNECTED) return false;
 
   HTTPClient http;
@@ -143,13 +155,52 @@ bool apiAuthenticateRfid(const String& uid, String& outBeneficiaryId, String& ou
     DeserializationError err = deserializeJson(resDoc, resBody);
 
     if (!err && resDoc["success"].as<bool>()) {
-      outBeneficiaryId   = resDoc["data"]["beneficiary"]["_id"].as<String>();
-      outBeneficiaryName = resDoc["data"]["beneficiary"]["fullName"].as<String>();
-      Serial.println("[API] Beneficiary Identified: " + outBeneficiaryName);
-      success = true;
+      JsonObject beneficiary = resDoc["data"]["beneficiary"];
+      String status = beneficiary["status"].as<String>();
+
+      if (status.equalsIgnoreCase("Active")) {
+        outBeneficiaryId    = beneficiary["_id"].as<String>();
+        outFullName         = beneficiary["fullName"].as<String>();
+        outRationCardNumber = beneficiary["rationCardNumber"].as<String>();
+        outRiceQuota        = beneficiary["riceQuota"].as<float>();
+        outOilQuota         = beneficiary["oilQuota"].as<float>();
+
+        Serial.println("[API] Beneficiary Authenticated Successfully:");
+        Serial.println("  ID:         " + outBeneficiaryId);
+        Serial.println("  Name:       " + outFullName);
+        Serial.println("  RationCard: " + outRationCardNumber);
+        Serial.printf("  Rice Quota: %.1f KG\n", outRiceQuota);
+        Serial.printf("  Oil Quota:  %.1f L\n", outOilQuota);
+        success = true;
+      } else {
+        Serial.printf("[API] Beneficiary status is '%s', not Active. Access denied.\n", status.c_str());
+        updateLcd("Status: " + status, "Access Denied");
+        buzzerBeep(400);
+        delay(2500);
+      }
+    } else {
+      Serial.println("[API] Failed to parse beneficiary response or success is false");
     }
+  } else if (httpCode == 403) {
+    String resBody = http.getString();
+    DynamicJsonDocument resDoc(512);
+    deserializeJson(resDoc, resBody);
+    String status = resDoc["beneficiaryStatus"].as<String>();
+    if (status.length() == 0) status = "Not Active";
+    Serial.printf("[API] Beneficiary disallowed (Status: %s)\n", status.c_str());
+    updateLcd("Status: " + status, "Access Denied");
+    buzzerBeep(400);
+    delay(2500);
+  } else if (httpCode == 404) {
+    Serial.println("[API] RFID UID not found in database");
+    updateLcd("Card Not Found!", "Access Denied");
+    buzzerBeep(400);
+    delay(2500);
   } else {
     Serial.printf("[API] RFID Identification Failed (HTTP %d)\n", httpCode);
+    updateLcd("Auth Failed!", "Code: " + String(httpCode));
+    buzzerBeep(400);
+    delay(2500);
   }
 
   http.end();
@@ -275,22 +326,42 @@ void loop() {
 
   // Step 1: Identify Beneficiary via Backend
   updateLcd("Verifying Card...", "UID: " + scannedUid);
-  String beneficiaryId = "";
-  String beneficiaryName = "";
 
-  if (!apiAuthenticateRfid(scannedUid, beneficiaryId, beneficiaryName)) {
-    updateLcd("Card Not Found!", "Access Denied");
-    buzzerBeep(400);
-    delay(3000);
+  if (!apiAuthenticateRfid(scannedUid, currentBeneficiaryId, currentFullName, currentRationCardNumber, currentRiceQuota, currentOilQuota)) {
     updateLcd("Smart Ration Sys", "Tap RFID Card");
     return;
   }
 
-  // Step 2: Request OTP Generation from Backend
+  // Step 2: Display Beneficiary Name & Ration Card Number
+  String line1 = currentFullName;
+  String line2 = "RC: " + currentRationCardNumber;
+  updateLcd(line1, line2);
+  buzzerBeep(80);
+  delay(2000);
+
+  // Step 3: Display Dynamic Rice & Oil Quotas from MongoDB
+  char riceLine[17];
+  char oilLine[17];
+  if (currentRiceQuota == (int)currentRiceQuota) {
+    snprintf(riceLine, sizeof(riceLine), "Rice: %d KG", (int)currentRiceQuota);
+  } else {
+    snprintf(riceLine, sizeof(riceLine), "Rice: %.1f KG", currentRiceQuota);
+  }
+
+  if (currentOilQuota == (int)currentOilQuota) {
+    snprintf(oilLine, sizeof(oilLine), "Oil: %d L", (int)currentOilQuota);
+  } else {
+    snprintf(oilLine, sizeof(oilLine), "Oil: %.1f L", currentOilQuota);
+  }
+  updateLcd(String(riceLine), String(oilLine));
+  buzzerBeep(80);
+  delay(2500);
+
+  // Step 4: Request OTP Generation from Backend
   updateLcd("Generating OTP", "Please wait...");
   buzzerBeep(60);
 
-  if (!apiGenerateOtp(beneficiaryId)) {
+  if (!apiGenerateOtp(currentBeneficiaryId)) {
     updateLcd("OTP Gen Failed!", "Try Again Later");
     buzzerBeep(400);
     delay(3000);
@@ -298,7 +369,7 @@ void loop() {
     return;
   }
 
-  // Step 3: Display Confirmation (Raw OTP is NEVER displayed on the screen)
+  // Step 5: Display Confirmation (Raw OTP is NEVER displayed on the screen)
   updateLcd("OTP Generated", "Check Reg. Mobile");
   buzzerBeep(100);
   delay(100);

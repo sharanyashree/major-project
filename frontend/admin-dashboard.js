@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. STATE STORAGE
   // =========================================================================
   let rawDistributors = [];
+  let rawBeneficiaries = [];
   let centralInventory = { riceStock: 0, oilStock: 0, minimumStock: 500 };
   let distributorInventories = [];
   let rawDispatches = [];
@@ -110,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sectionTitles = {
     dashboard: 'Dashboard Overview',
     distributors: 'Distributor Management',
+    beneficiaries: 'Beneficiary Approvals & Management',
     inventory: 'Central Warehouse Inventory',
     dispatch: 'Stock Dispatch Management',
     reports: 'Reports & Analytics',
@@ -521,6 +523,258 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (closeViewModalBtn) closeViewModalBtn.addEventListener('click', () => viewDistributorModal.classList.add('hidden'));
   if (confirmViewModalBtn) confirmViewModalBtn.addEventListener('click', () => viewDistributorModal.classList.add('hidden'));
+
+  // =========================================================================
+  // 5b. BENEFICIARY APPROVALS & MANAGEMENT
+  // =========================================================================
+  const beneficiariesTableBody = document.getElementById('beneficiariesTableBody');
+  const beneficiarySearchInput = document.getElementById('beneficiarySearchInput');
+  const benDistrictFilterSelect = document.getElementById('benDistrictFilterSelect');
+  const benStatusFilterSelect = document.getElementById('benStatusFilterSelect');
+  const beneficiariesCountText = document.getElementById('beneficiariesCountText');
+  const refreshBeneficiariesBtn = document.getElementById('refreshBeneficiariesBtn');
+  const navPendingBenBadge = document.getElementById('navPendingBenBadge');
+
+  const viewBeneficiaryModal = document.getElementById('viewBeneficiaryModal');
+  const viewBeneficiaryModalContent = document.getElementById('viewBeneficiaryModalContent');
+  const closeViewBeneficiaryModalBtn = document.getElementById('closeViewBeneficiaryModalBtn');
+  const closeViewBeneficiaryModalFooterBtn = document.getElementById('closeViewBeneficiaryModalFooterBtn');
+
+  async function loadBeneficiaries() {
+    try {
+      const statusVal = benStatusFilterSelect ? benStatusFilterSelect.value : 'ALL';
+      const districtVal = benDistrictFilterSelect ? benDistrictFilterSelect.value : 'ALL';
+
+      const res = await adminApi.getAllBeneficiaries({
+        status: statusVal,
+        district: districtVal,
+      });
+
+      rawBeneficiaries = res.data || [];
+      updateBeneficiaryBadges();
+      renderBeneficiariesTable();
+    } catch (err) {
+      console.error('Failed to load beneficiaries:', err);
+      showToast(`Error loading beneficiaries: ${err.message}`);
+    }
+  }
+
+  function updateBeneficiaryBadges() {
+    const pendingCount = rawBeneficiaries.filter(b => b.status === 'Pending').length;
+    if (navPendingBenBadge) {
+      if (pendingCount > 0) {
+        navPendingBenBadge.textContent = pendingCount;
+        navPendingBenBadge.style.display = 'inline-block';
+      } else {
+        navPendingBenBadge.style.display = 'none';
+      }
+    }
+  }
+
+  function renderBeneficiariesTable() {
+    const query = beneficiarySearchInput ? beneficiarySearchInput.value.toLowerCase().trim() : '';
+    const districtFilter = benDistrictFilterSelect ? benDistrictFilterSelect.value : 'ALL';
+    const statusFilter = benStatusFilterSelect ? benStatusFilterSelect.value : 'ALL';
+
+    const filtered = rawBeneficiaries.filter(b => {
+      const bCard = (b.rationCardNumber || '').toLowerCase();
+      const bName = (b.fullName || '').toLowerCase();
+      const bMobile = (b.mobileNumber || '').toLowerCase();
+      const bDist = (b.district || '').toLowerCase();
+      const bTaluk = (b.taluk || '').toLowerCase();
+      const bVillage = (b.village || '').toLowerCase();
+      const distName = (b.assignedDistributor && b.assignedDistributor.name ? b.assignedDistributor.name : '').toLowerCase();
+
+      const matchQuery =
+        !query ||
+        bCard.includes(query) ||
+        bName.includes(query) ||
+        bMobile.includes(query) ||
+        bDist.includes(query) ||
+        bTaluk.includes(query) ||
+        bVillage.includes(query) ||
+        distName.includes(query);
+
+      const matchDistrict = districtFilter === 'ALL' || b.district === districtFilter;
+      const matchStatus = statusFilter === 'ALL' || b.status === statusFilter;
+
+      return matchQuery && matchDistrict && matchStatus;
+    });
+
+    if (beneficiariesTableBody) {
+      beneficiariesTableBody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        beneficiariesTableBody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 28px; color: #64748B;">
+              No beneficiary records found matching the criteria.
+            </td>
+          </tr>
+        `;
+      } else {
+        filtered.forEach((ben) => {
+          const tr = document.createElement('tr');
+          const benId = ben._id || ben.id;
+
+          let badgeClass = 'badge-primary';
+          if (ben.status === 'Active' || ben.status === 'Approved') badgeClass = 'badge-success';
+          else if (ben.status === 'Pending') badgeClass = 'badge-warning';
+          else if (ben.status === 'Rejected' || ben.status === 'Suspended') badgeClass = 'badge-danger';
+
+          // Action buttons depending on status
+          let actionButtons = `
+            <button class="btn-icon view-ben-btn" data-id="${benId}" title="View Complete Details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          `;
+
+          if (ben.status === 'Pending') {
+            actionButtons += `
+              <button class="btn btn-sm btn-primary approve-ben-btn" data-id="${benId}" style="padding: 3px 8px; font-size: 0.75rem; background: #059669;" title="Approve Beneficiary Registration">
+                Approve
+              </button>
+              <button class="btn btn-sm btn-outline reject-ben-btn" data-id="${benId}" style="padding: 3px 8px; font-size: 0.75rem; color: #DC2626; border-color: #DC2626;" title="Reject Beneficiary Application">
+                Reject
+              </button>
+            `;
+          } else if (ben.status === 'Active' || ben.status === 'Approved') {
+            actionButtons += `
+              <button class="btn btn-sm btn-outline reject-ben-btn" data-id="${benId}" style="padding: 3px 8px; font-size: 0.75rem; color: #DC2626; border-color: #DC2626;" title="Reject/Revoke Beneficiary">
+                Reject
+              </button>
+            `;
+          } else if (ben.status === 'Rejected') {
+            actionButtons += `
+              <button class="btn btn-sm btn-primary approve-ben-btn" data-id="${benId}" style="padding: 3px 8px; font-size: 0.75rem; background: #059669;" title="Re-approve Beneficiary">
+                Approve
+              </button>
+            `;
+          }
+
+          const distributorText = ben.assignedDistributor
+            ? (ben.assignedDistributor.name ? `${ben.assignedDistributor.name} (${ben.assignedDistributor.fpsCode || 'FPS'})` : 'Assigned')
+            : 'Unassigned';
+
+          tr.innerHTML = `
+            <td><strong>${ben.rationCardNumber || 'N/A'}</strong></td>
+            <td>${ben.fullName || 'N/A'}</td>
+            <td>${ben.mobileNumber || 'N/A'}</td>
+            <td>${ben.district || 'N/A'}${ben.taluk ? ', ' + ben.taluk : ''}</td>
+            <td><strong style="color: #059669;">${ben.riceQuota != null ? ben.riceQuota : 0} KG</strong></td>
+            <td><strong style="color: #0284C7;">${ben.oilQuota != null ? ben.oilQuota : 0} L</strong></td>
+            <td><span class="badge badge-primary" style="font-size: 0.75rem;">${distributorText}</span></td>
+            <td><span class="badge ${badgeClass}">${ben.status || 'Pending'}</span></td>
+            <td>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                ${actionButtons}
+              </div>
+            </td>
+          `;
+
+          beneficiariesTableBody.appendChild(tr);
+        });
+      }
+    }
+
+    if (beneficiariesCountText) {
+      beneficiariesCountText.textContent = `Showing ${filtered.length} of ${rawBeneficiaries.length} beneficiary records`;
+    }
+  }
+
+  // Beneficiary Table Event Delegation (Approve, Reject, View)
+  if (beneficiariesTableBody) {
+    beneficiariesTableBody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const benId = btn.getAttribute('data-id');
+      const ben = rawBeneficiaries.find(b => (b._id || b.id) === benId);
+      if (!ben) return;
+
+      // 1. View Details Modal
+      if (btn.classList.contains('view-ben-btn')) {
+        if (viewBeneficiaryModalContent && viewBeneficiaryModal) {
+          const distInfo = ben.assignedDistributor
+            ? `${ben.assignedDistributor.name || 'Distributor'} (FPS: ${ben.assignedDistributor.fpsCode || 'N/A'}, Phone: ${ben.assignedDistributor.mobileNumber || 'N/A'})`
+            : 'None';
+
+          const statusBadge = (ben.status === 'Active' || ben.status === 'Approved')
+            ? '<span class="badge badge-success">Active / Approved</span>'
+            : (ben.status === 'Pending')
+            ? '<span class="badge badge-warning">Pending Approval</span>'
+            : '<span class="badge badge-danger">Rejected</span>';
+
+          viewBeneficiaryModalContent.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 0.9rem; margin-bottom: 12px;">
+              <div><strong>Beneficiary Name:</strong><br>${ben.fullName || 'N/A'}</div>
+              <div><strong>Ration Card Number:</strong><br><strong style="color: #2563EB;">${ben.rationCardNumber || 'N/A'}</strong></div>
+              <div><strong>Mobile Number:</strong><br>${ben.mobileNumber || 'N/A'}</div>
+              <div><strong>Family Members:</strong><br>${ben.familyMemberCount != null ? ben.familyMemberCount : '1'}</div>
+              <div><strong>District:</strong><br>${ben.district || 'N/A'}</div>
+              <div><strong>Taluk:</strong><br>${ben.taluk || 'N/A'}</div>
+              <div><strong>Village:</strong><br>${ben.village || 'N/A'}</div>
+              <div><strong>Address:</strong><br>${ben.address || 'N/A'}</div>
+              <div style="background: #F0FDF4; padding: 10px; border-radius: 6px; border: 1px solid #BBF7D0;">
+                <strong style="color: #166534;">Rice Quota Allocation:</strong><br>
+                <span style="font-size: 1.1rem; font-weight: 700; color: #15803D;">${ben.riceQuota != null ? ben.riceQuota : 0} KG</span>
+              </div>
+              <div style="background: #F0F9FF; padding: 10px; border-radius: 6px; border: 1px solid #BAE6FD;">
+                <strong style="color: #075985;">Oil Quota Allocation:</strong><br>
+                <span style="font-size: 1.1rem; font-weight: 700; color: #0284C7;">${ben.oilQuota != null ? ben.oilQuota : 0} Litres</span>
+              </div>
+              <div style="grid-column: span 2;">
+                <strong>Assigned FPS Distributor:</strong><br>
+                <span style="color: #475569;">${distInfo}</span>
+              </div>
+              <div><strong>Application Status:</strong><br>${statusBadge}</div>
+              <div><strong>Registration Date:</strong><br>${ben.createdAt ? new Date(ben.createdAt).toLocaleDateString() : 'N/A'}</div>
+            </div>
+          `;
+          viewBeneficiaryModal.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // 2. Approve Beneficiary
+      if (btn.classList.contains('approve-ben-btn')) {
+        if (confirm(`Approve beneficiary application for ${ben.fullName} (Card: ${ben.rationCardNumber}) with Rice: ${ben.riceQuota || 0}KG, Oil: ${ben.oilQuota || 0}L?`)) {
+          try {
+            const res = await adminApi.approveBeneficiary(benId);
+            showToast(res.message || `Beneficiary ${ben.fullName} approved successfully.`);
+            addSystemNotification('Beneficiary Approved', `Approved ration quota for ${ben.fullName} (${ben.rationCardNumber}): ${ben.riceQuota || 0}KG Rice, ${ben.oilQuota || 0}L Oil.`);
+            await loadBeneficiaries();
+          } catch (err) {
+            showToast(`Approve error: ${err.message}`);
+          }
+        }
+        return;
+      }
+
+      // 3. Reject Beneficiary
+      if (btn.classList.contains('reject-ben-btn')) {
+        if (confirm(`Reject beneficiary application for ${ben.fullName} (Card: ${ben.rationCardNumber})?`)) {
+          try {
+            const res = await adminApi.rejectBeneficiary(benId);
+            showToast(res.message || `Beneficiary ${ben.fullName} application rejected.`);
+            addSystemNotification('Beneficiary Rejected', `Rejected application for ${ben.fullName} (${ben.rationCardNumber}).`);
+            await loadBeneficiaries();
+          } catch (err) {
+            showToast(`Reject error: ${err.message}`);
+          }
+        }
+        return;
+      }
+    });
+  }
+
+  if (beneficiarySearchInput) beneficiarySearchInput.addEventListener('input', renderBeneficiariesTable);
+  if (benDistrictFilterSelect) benDistrictFilterSelect.addEventListener('change', renderBeneficiariesTable);
+  if (benStatusFilterSelect) benStatusFilterSelect.addEventListener('change', renderBeneficiariesTable);
+  if (refreshBeneficiariesBtn) refreshBeneficiariesBtn.addEventListener('click', loadBeneficiaries);
+
+  if (closeViewBeneficiaryModalBtn) closeViewBeneficiaryModalBtn.addEventListener('click', () => viewBeneficiaryModal.classList.add('hidden'));
+  if (closeViewBeneficiaryModalFooterBtn) closeViewBeneficiaryModalFooterBtn.addEventListener('click', () => viewBeneficiaryModal.classList.add('hidden'));
 
   // =========================================================================
   // 6. CENTRAL INVENTORY & RESTOCK
@@ -1141,6 +1395,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   Promise.all([
     loadDistributors(),
+    loadBeneficiaries(),
     loadCentralInventory(),
     loadDispatches(),
     loadReports()

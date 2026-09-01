@@ -78,10 +78,10 @@
 
       <div class="sidebar-footer">
         <div class="user-mini-card">
-          <div class="user-avatar" id="sidebarAvatar">AK</div>
+          <div class="user-avatar" id="sidebarAvatar">--</div>
           <div class="user-details">
-            <span class="user-name" id="sidebarUserName">Anand Kumar</span>
-            <span class="user-role" id="sidebarUserCard">RC-884210</span>
+            <span class="user-name" id="sidebarUserName">Loading...</span>
+            <span class="user-role" id="sidebarUserCard">Loading...</span>
           </div>
         </div>
         <button class="logout-btn" id="sidebarLogoutBtn" title="Logout">
@@ -101,7 +101,7 @@
           </button>
           <div>
             <h1 class="page-title" id="pageTitle">Dashboard Overview</h1>
-            <p class="page-subtitle" id="pageSubtitle">Ration Card: RC-884210 • Priority Household (PHH)</p>
+            <p class="page-subtitle" id="pageSubtitle">Official PDS Beneficiary Portal</p>
           </div>
         </div>
 
@@ -109,20 +109,20 @@
           <!-- Card Info Pill -->
           <div class="fps-info-pill">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            <span id="topCardNumber">RC-884210 • PHH Card</span>
+            <span id="topCardNumber">Loading Card Info...</span>
           </div>
 
           <!-- Date Display -->
           <div class="date-display">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span id="currentDateStr">Sunday, 02 Aug 2026</span>
+            <span id="currentDateStr">--</span>
           </div>
 
           <!-- Notifications Dropdown -->
           <div class="top-notif-wrapper">
             <button class="notif-btn" id="notifToggleBtn" title="Notifications">
               <span style="font-size: 1.1rem; margin-right: 2px;">🔔</span>
-              <span class="notif-badge-count" id="benNotifBellCount">3</span>
+              <span class="notif-badge-count" id="benNotifBellCount">0</span>
             </button>
             <div class="notif-dropdown hidden" id="notifDropdown">
               <div class="notif-dropdown-header">
@@ -138,9 +138,9 @@
           <!-- Profile Dropdown -->
           <div class="profile-dropdown-wrapper">
             <button class="profile-btn" id="profileToggleBtn">
-              <div class="profile-avatar" id="topAvatar">AK</div>
+              <div class="profile-avatar" id="topAvatar">--</div>
               <div class="profile-meta">
-                <span class="profile-name" id="topUserName">Anand Kumar</span>
+                <span class="profile-name" id="topUserName">Loading...</span>
                 <span class="profile-role">Beneficiary</span>
               </div>
               <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -148,8 +148,8 @@
 
             <div class="profile-menu hidden" id="profileMenu">
               <div class="profile-menu-header">
-                <div class="user-fullname" id="menuUserName">Anand Kumar</div>
-                <div class="user-email" id="menuUserCard">Ration Card: RC-884210</div>
+                <div class="user-fullname" id="menuUserName">Loading...</div>
+                <div class="user-email" id="menuUserCard">Ration Card: Loading...</div>
               </div>
               <hr class="menu-divider">
               <button class="menu-item" id="menuProfileBtn">
@@ -174,6 +174,18 @@
            3. MAIN CONTENT AREA
            ========================================================================= -->
       <main class="main-content">
+
+        <!-- Beneficiary Portal Error Alert Banner (Hidden by default) -->
+        <div class="beneficiary-error-banner hidden" id="beneficiaryErrorBanner">
+          <div class="error-banner-content">
+            <span class="error-icon">⚠️</span>
+            <div class="error-text">
+              <strong id="errorBannerTitle">Unable to fetch live portal records</strong>
+              <span id="errorBannerMessage">Displaying offline cached session. Please check your network connection or try again.</span>
+            </div>
+          </div>
+          <button type="button" class="btn-outline-danger" id="retryLoadingBtn">Retry Loading</button>
+        </div>
 
         <!-- SECTION 1: DASHBOARD OVERVIEW -->
         <section id="dashboardSection" class="content-section">
@@ -558,6 +570,15 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="confirmNotifDetailModalBtn">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Beneficiary Portal Loading Screen Overlay -->
+  <div class="beneficiary-loading-screen" id="beneficiaryLoadingScreen">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div class="loading-title">Loading Beneficiary Portal</div>
+      <div class="loading-subtitle">Verifying secure session and fetching ration records...</div>
     </div>
   </div>
 

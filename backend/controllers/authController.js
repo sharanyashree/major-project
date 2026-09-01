@@ -263,6 +263,8 @@ const beneficiaryLogin = async (req, res) => {
         village: beneficiary.village,
         address: beneficiary.address,
         familyMemberCount: beneficiary.familyMemberCount,
+        riceQuota: beneficiary.riceQuota !== undefined ? beneficiary.riceQuota : 0,
+        oilQuota: beneficiary.oilQuota !== undefined ? beneficiary.oilQuota : 0,
         rfidUid: beneficiary.rfidUid,
         assignedDistributor: beneficiary.assignedDistributor,
         status: beneficiary.status,
@@ -293,6 +295,8 @@ const beneficiaryRegister = async (req, res) => {
     const familyMemberCount = req.body.familyMemberCount || req.body.familyMembers || req.body.members || 1;
     const rfidUid = req.body.rfidUid || req.body.rfidTag || req.body.rfid;
     const assignedDistributor = req.body.assignedDistributor || req.body.distributorId || req.body.distributor;
+    const riceQuota = Math.max(0, Number(req.body.riceQuota ?? req.body.riceAllowed ?? req.body.rice ?? 0) || 0);
+    const oilQuota = Math.max(0, Number(req.body.oilQuota ?? req.body.oilAllowed ?? req.body.oil ?? 0) || 0);
 
     // Validate required fields
     if (
@@ -374,7 +378,9 @@ const beneficiaryRegister = async (req, res) => {
       familyMemberCount: Math.max(1, Number(familyMemberCount) || 1),
       rfidUid: rfidUid && String(rfidUid).trim() ? String(rfidUid).trim() : undefined,
       assignedDistributor: distributorToAssign,
-      status: 'Active',
+      riceQuota: riceQuota,
+      oilQuota: oilQuota,
+      status: 'Pending',
     });
 
     return res.status(201).json({
@@ -392,6 +398,8 @@ const beneficiaryRegister = async (req, res) => {
         familyMemberCount: beneficiary.familyMemberCount,
         rfidUid: beneficiary.rfidUid,
         assignedDistributor: beneficiary.assignedDistributor,
+        riceQuota: beneficiary.riceQuota,
+        oilQuota: beneficiary.oilQuota,
         status: beneficiary.status,
         createdAt: beneficiary.createdAt,
       },

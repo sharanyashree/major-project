@@ -86,18 +86,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. AUTHENTICATION GUARD
   // =========================================================================
   function checkAuth() {
-    const user = authStorage.getUser();
+    const session = authStorage.getSession();
     const token = authStorage.getToken();
+    const user = authStorage.getUser();
 
-    if (!token || !user) {
+    if (!token || !session) {
       window.location.href = 'login.html';
       return false;
     }
 
-    if (user.role && user.role !== 'Beneficiary') {
+    const userRole = (session.role || user?.role || '').toLowerCase();
+    if (userRole && userRole !== 'user' && userRole !== 'beneficiary') {
       // Redirect to correct dashboard
-      if (user.role === 'Admin') window.location.href = 'admin-dashboard.html';
-      else if (user.role === 'Distributor') window.location.href = 'distributor-dashboard.html';
+      if (userRole === 'admin') window.location.href = 'admin-dashboard.html';
+      else if (userRole === 'distributor') window.location.href = 'distributor-dashboard.html';
       else window.location.href = 'login.html';
       return false;
     }
@@ -162,18 +164,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentBeneficiary = res.data;
         renderProfile(currentBeneficiary);
       } else {
-        // Fallback to local session storage user if API fails
+        // Fallback to currently authenticated session user if API fails
         const sessionUser = authStorage.getUser();
-        if (sessionUser) {
+        if (sessionUser && (sessionUser.fullName || sessionUser.name || sessionUser.rationCardNumber)) {
           renderProfile({
-            fullName: sessionUser.name || 'Beneficiary User',
-            rationCardNumber: sessionUser.identifier || 'RC-884210',
+            fullName: sessionUser.fullName || sessionUser.name || 'Beneficiary User',
+            rationCardNumber: sessionUser.rationCardNumber || sessionUser.identifier || '',
             mobileNumber: sessionUser.mobileNumber || 'N/A',
-            district: sessionUser.district || 'Belagavi',
-            taluk: sessionUser.taluk || 'Belagavi Urban',
-            village: sessionUser.village || 'City Ward',
-            address: sessionUser.address || 'Karnataka, India',
-            familyMemberCount: 4,
+            district: sessionUser.district || '',
+            taluk: sessionUser.taluk || '',
+            village: sessionUser.village || '',
+            address: sessionUser.address || '',
+            familyMemberCount: sessionUser.familyMemberCount || 1,
+            riceQuota: sessionUser.riceQuota || 0,
+            oilQuota: sessionUser.oilQuota || 0,
+            assignedDistributor: sessionUser.assignedDistributor || null,
           });
         }
       }
@@ -317,12 +322,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAllocation = res.data;
         renderAllocation(currentAllocation);
       } else {
-        // Fallback default
+        // Fallback using authenticated beneficiary quota
+        const riceVal = currentBeneficiary?.riceQuota ?? ((currentBeneficiary?.familyMemberCount || 1) * 5);
+        const oilVal = currentBeneficiary?.oilQuota ?? 2;
         renderAllocation({
           month: currentMonth,
           year: currentYear,
-          riceAllocated: (currentBeneficiary?.familyMemberCount || 4) * 5,
-          oilAllocated: 2,
+          riceAllocated: riceVal,
+          oilAllocated: oilVal,
           collectionStatus: 'Pending',
         });
       }
@@ -330,11 +337,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error("Failed to fetch current allocation:", err);
       const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
       const currentYear = new Date().getFullYear();
+      const riceVal = currentBeneficiary?.riceQuota ?? ((currentBeneficiary?.familyMemberCount || 1) * 5);
+      const oilVal = currentBeneficiary?.oilQuota ?? 2;
       renderAllocation({
         month: currentMonth,
         year: currentYear,
-        riceAllocated: 20,
-        oilAllocated: 2,
+        riceAllocated: riceVal,
+        oilAllocated: oilVal,
         collectionStatus: 'Pending',
       });
     }

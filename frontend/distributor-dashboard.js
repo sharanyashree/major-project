@@ -80,7 +80,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const sectionTitles = {
     dashboard: { title: 'Dashboard Overview', subtitle: 'Fair Price Shop • Operations Portal' },
-    beneficiaries: { title: 'Beneficiary Management', subtitle: 'Assigned Family Records & Ration Cards' },
+    beneficiaries: { title: 'Beneficiary Details', subtitle: 'Assigned Family Records & Ration Cards' },
+    'beneficiary-details': { title: 'Beneficiary Details', subtitle: 'Assigned Family Records & Ration Cards' },
+    beneficiaryDetails: { title: 'Beneficiary Details', subtitle: 'Assigned Family Records & Ration Cards' },
     allocation: { title: 'Monthly Allocation', subtitle: 'Disburse Subsidized Foodgrain Quotas' },
     inventory: { title: 'FPS Store Inventory', subtitle: 'Real-time Stock Levels & Storage Reserves' },
     distribution: { title: 'Distribution Records', subtitle: 'Real-time Transaction History & Receipts' },
@@ -89,10 +91,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   function switchSection(targetKey) {
-    if (!sectionTitles[targetKey]) return;
+    if (!targetKey) return;
+    let key = targetKey;
+    if (key === 'beneficiary-details' || key === 'beneficiaryDetails' || key === 'beneficiary' || key === 'beneficiariesSection') {
+      key = 'beneficiaries';
+    }
+    if (!sectionTitles[key]) return;
 
     navItems.forEach((item) => {
-      if (item.getAttribute('data-target') === targetKey) {
+      const itemTarget = item.getAttribute('data-target');
+      if (itemTarget === key || (key === 'beneficiaries' && (itemTarget === 'beneficiaries' || itemTarget === 'beneficiary-details'))) {
         item.classList.add('active');
       } else {
         item.classList.remove('active');
@@ -100,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     contentSections.forEach((sec) => {
-      if (sec.id === `${targetKey}Section`) {
+      if (sec.id === `${key}Section`) {
         sec.classList.remove('hidden');
         sec.classList.add('active');
       } else {
@@ -109,10 +117,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    if (pageTitle) pageTitle.textContent = sectionTitles[targetKey].title;
+    if (pageTitle) pageTitle.textContent = sectionTitles[key].title;
     if (pageSubtitle) {
-      const storeName = distributorProfile ? `${distributorProfile.storeName || 'FPS Store'} • ${distributorProfile.fpsCode || 'FPS'}` : sectionTitles[targetKey].subtitle;
-      pageSubtitle.textContent = targetKey === 'dashboard' ? storeName : sectionTitles[targetKey].subtitle;
+      const storeName = distributorProfile ? `${distributorProfile.storeName || 'FPS Store'} • ${distributorProfile.fpsCode || 'FPS'}` : sectionTitles[key].subtitle;
+      pageSubtitle.textContent = key === 'dashboard' ? storeName : sectionTitles[key].subtitle;
+    }
+
+    if (key === 'beneficiaries' && assignedBeneficiaries.length === 0) {
+      loadAssignedBeneficiaries();
     }
 
     sidebar.classList.remove('mobile-open');
@@ -134,6 +146,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const targetKey = trig.getAttribute('data-target');
       switchSection(targetKey);
     });
+  });
+
+  // Global delegation for any dynamically created nav-trigger or data-target elements
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('.nav-trigger, [data-target="beneficiaries"], [data-target="beneficiary-details"]');
+    if (trigger && !trigger.classList.contains('nav-item')) {
+      const targetKey = trigger.getAttribute('data-target');
+      if (targetKey) {
+        e.preventDefault();
+        switchSection(targetKey);
+      }
+    }
   });
 
   // Current Date Display
@@ -448,8 +472,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (cardType === 'AAY') cardBadge = 'badge-warning';
           if (cardType === 'NPHH') cardBadge = 'badge-info';
 
-          const status = ben.status || 'Active';
-          const statusBadge = status === 'Active' ? 'badge-success' : 'badge-danger';
+          const status = ben.status || 'Pending';
+          let statusBadge = 'badge-warning';
+          if (status === 'Active' || status === 'Approved') statusBadge = 'badge-success';
+          else if (status === 'Rejected' || status === 'Inactive') statusBadge = 'badge-danger';
+          else if (status === 'Pending') statusBadge = 'badge-warning';
           const members = ben.familyMemberCount ?? ben.familyMembers ?? 1;
           const location = ben.village || ben.taluk || ben.district || 'Assigned Area';
 
@@ -489,9 +516,108 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (villageFilterSelect) villageFilterSelect.addEventListener('change', renderBeneficiaries);
   if (statusFilterSelect) statusFilterSelect.addEventListener('change', renderBeneficiaries);
 
-  // Table Action Event Delegation for Beneficiaries
+  // Add Beneficiary Modal Open/Close Handlers
+  if (openAddBeneficiaryModalBtn) {
+    openAddBeneficiaryModalBtn.addEventListener('click', () => {
+      if (beneficiaryForm) beneficiaryForm.reset();
+      const editIdx = document.getElementById('editBeneficiaryIndex');
+      if (editIdx) editIdx.value = '-1';
+      if (beneficiaryModalTitle) beneficiaryModalTitle.textContent = 'Add New Beneficiary Family';
+      if (beneficiaryModal) beneficiaryModal.classList.remove('hidden');
+    });
+  }
+
+  if (closeBeneficiaryModalBtn) {
+    closeBeneficiaryModalBtn.addEventListener('click', () => {
+      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
+    });
+  }
+
+  if (cancelBeneficiaryModalBtn) {
+    cancelBeneficiaryModalBtn.addEventListener('click', () => {
+      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
+    });
+  }
+
+  // Handle Add/Edit Beneficiary Form Submit
+  if (beneficiaryForm) {
+    beneficiaryForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rationCardNo = document.getElementById('modalRationCardNo')?.value.trim();
+      const headOfFamily = document.getElementById('modalHeadOfFamily')?.value.trim();
+      const village = document.getElementById('modalVillage')?.value.trim();
+      const familyMembers = parseInt(document.getElementById('modalFamilyMembers')?.value, 10) || 1;
+      const cardType = document.getElementById('modalCardType')?.value || 'PHH';
+      const mobileNumber = document.getElementById('modalMobile')?.value.trim();
+      const riceAllowed = Math.max(0, parseFloat(document.getElementById('modalRiceAllowed')?.value) || 0);
+      const oilAllowed = Math.max(0, parseFloat(document.getElementById('modalOilAllowed')?.value) || 0);
+      const status = document.getElementById('modalStatus')?.value || 'Pending';
+
+      const payload = {
+        fullName: headOfFamily,
+        rationCardNumber: rationCardNo,
+        mobileNumber: mobileNumber,
+        district: distributorProfile?.district || 'Bangalore Urban',
+        taluk: distributorProfile?.taluk || 'North',
+        village: village,
+        familyMemberCount: familyMembers,
+        cardCategory: cardType,
+        riceQuota: riceAllowed,
+        oilQuota: oilAllowed,
+        riceAllowed: riceAllowed,
+        oilAllowed: oilAllowed,
+        status: status,
+      };
+
+      const newBeneficiary = {
+        _id: 'ben_' + Date.now(),
+        rationCardNumber: rationCardNo,
+        rationCardNo: rationCardNo,
+        fullName: headOfFamily,
+        headOfFamily: headOfFamily,
+        village: village,
+        familyMemberCount: familyMembers,
+        familyMembers: familyMembers,
+        cardCategory: cardType,
+        cardType: cardType,
+        mobileNumber: mobileNumber,
+        riceQuota: riceAllowed,
+        oilQuota: oilAllowed,
+        riceAllowed: riceAllowed,
+        oilAllowed: oilAllowed,
+        status: status,
+      };
+
+      // Try registering via API if available, fallback gracefully
+      try {
+        if (typeof authApi !== 'undefined' && authApi.beneficiaryRegister) {
+          const res = await authApi.beneficiaryRegister({
+            ...payload,
+            password: 'Password@123',
+            assignedDistributor: distributorProfile?._id,
+          });
+          if (res && res.success && res.data) {
+            newBeneficiary._id = res.data._id || newBeneficiary._id;
+            if (res.data.riceQuota !== undefined) newBeneficiary.riceQuota = res.data.riceQuota;
+            if (res.data.oilQuota !== undefined) newBeneficiary.oilQuota = res.data.oilQuota;
+          }
+        }
+      } catch (err) {
+        console.warn('API registration non-blocking fallback:', err);
+      }
+
+      assignedBeneficiaries.unshift(newBeneficiary);
+      populateVillageFilter(assignedBeneficiaries);
+      renderBeneficiaries();
+      populateAllocationDropdown();
+      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
+      showToast(`Beneficiary ${headOfFamily} (${rationCardNo}) registered (Status: Pending Admin Approval) with ${riceAllowed} KG Rice & ${oilAllowed} L Oil quota.`);
+    });
+  }
+
+  // Table Action Event Delegation for Beneficiaries (View Beneficiary Details)
   if (beneficiariesTableBody) {
-    beneficiariesTableBody.addEventListener('click', (e) => {
+    beneficiariesTableBody.addEventListener('click', async (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
 
@@ -499,28 +625,108 @@ document.addEventListener('DOMContentLoaded', async () => {
       const ben = assignedBeneficiaries.find((b, idx) => (b._id && b._id.toString() === id) || idx.toString() === id);
       if (!ben) return;
 
-      if (btn.classList.contains('view-ben-btn')) {
+      if (btn.classList.contains('view-ben-btn') || btn.closest('.view-ben-btn')) {
         const fpsCode = distributorProfile?.fpsCode || 'FPS-4201';
         const storeName = distributorProfile?.storeName || 'Fair Price Shop';
+        const cardNo = ben.rationCardNumber || ben.rationCardNo || 'N/A';
+        const name = ben.fullName || ben.headOfFamily || 'Beneficiary';
+        const category = ben.cardCategory || ben.cardType || 'PHH';
+        const members = ben.familyMemberCount ?? ben.familyMembers ?? 1;
+        const location = ben.village || ben.taluk || ben.district || 'Assigned Jurisdiction';
+        const mobile = ben.mobileNumber || 'N/A';
+        const status = ben.status || 'Active';
+
+        const riceAllowed = ben.riceQuota ?? ben.riceAllowed ?? 0;
+        const oilAllowed = ben.oilQuota ?? ben.oilAllowed ?? 0;
+
         viewBeneficiaryModalContent.innerHTML = `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 0.9rem;">
-            <div><strong>Ration Card No:</strong><br>${ben.rationCardNumber || ben.rationCardNo}</div>
-            <div><strong>Head of Family:</strong><br>${ben.fullName || ben.headOfFamily}</div>
-            <div><strong>Card Category:</strong><br><span class="badge badge-primary">${ben.cardCategory || ben.cardType || 'PHH'}</span></div>
-            <div><strong>Family Count:</strong><br>${ben.familyMemberCount ?? ben.familyMembers ?? 1} Members</div>
-            <div><strong>Location:</strong><br>${ben.village || ben.taluk || ben.district || 'Assigned Area'}</div>
-            <div><strong>Mobile Number:</strong><br>${ben.mobileNumber || 'N/A'}</div>
-            <div><strong>Status:</strong><br><span class="badge badge-success">${ben.status || 'Active'}</span></div>
-            <div><strong>Assigned FPS:</strong><br>${fpsCode} (${storeName})</div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Ration Card No</span>
+              <div style="font-weight: 700; color: var(--color-primary); font-size: 1rem; margin-top: 2px;">${cardNo}</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Head of Family</span>
+              <div style="font-weight: 700; color: var(--color-text-main); font-size: 1rem; margin-top: 2px;">${name}</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Rice Allowed Quota</span>
+              <div style="font-weight: 700; color: #16A34A; font-size: 1rem; margin-top: 2px;">${riceAllowed} KG</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Oil Allowed Quota</span>
+              <div style="font-weight: 700; color: #D97706; font-size: 1rem; margin-top: 2px;">${oilAllowed} Litres</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Card Category</span>
+              <div style="margin-top: 2px;"><span class="badge badge-primary">${category}</span></div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Family Members</span>
+              <div style="font-weight: 600; margin-top: 2px;">${members} Members Registered</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Village / Ward</span>
+              <div style="font-weight: 600; margin-top: 2px;">${location}</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Mobile Number</span>
+              <div style="font-weight: 600; margin-top: 2px;">${mobile}</div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Status</span>
+              <div style="margin-top: 2px;"><span class="badge badge-success">${status}</span></div>
+            </div>
+            <div style="padding: 10px; background: var(--color-bg); border-radius: var(--radius-sm);">
+              <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase;">Assigned FPS</span>
+              <div style="font-weight: 600; margin-top: 2px;">${fpsCode} (${storeName})</div>
+            </div>
+          </div>
+          <div id="modalBeneficiaryExtraDetails" style="margin-top: 14px; font-size: 0.85rem; color: var(--color-text-muted); text-align: center;">
+            FPS Jurisdiction: Bangalore Urban North • Real-time FPS Records
           </div>
         `;
-        viewBeneficiaryModal.classList.remove('hidden');
+        if (viewBeneficiaryModal) viewBeneficiaryModal.classList.remove('hidden');
+
+        // Attempt background API fetch for enriched details
+        if (ben._id) {
+          try {
+            const detailRes = await distributorApi.getBeneficiaryDetails(ben._id);
+            if (detailRes && detailRes.success && detailRes.data) {
+              const extraContainer = document.getElementById('modalBeneficiaryExtraDetails');
+              if (extraContainer) {
+                const totalAlloc = detailRes.data.allocations?.length || 0;
+                const totalTxns = detailRes.data.recentTransactions?.length || 0;
+                extraContainer.innerHTML = `
+                  <div style="display: flex; justify-content: space-around; padding: 8px; background: #F1F5F9; border-radius: var(--radius-sm); margin-top: 6px;">
+                    <span><strong>Allocations:</strong> ${totalAlloc} Record(s)</span>
+                    <span><strong>Transactions:</strong> ${totalTxns} Disbursed</span>
+                  </div>
+                `;
+              }
+            }
+          } catch (fetchErr) {
+            // Non-blocking
+          }
+        }
       }
     });
   }
 
   if (closeViewBeneficiaryModalBtn) closeViewBeneficiaryModalBtn.addEventListener('click', () => viewBeneficiaryModal.classList.add('hidden'));
   if (confirmViewBeneficiaryModalBtn) confirmViewBeneficiaryModalBtn.addEventListener('click', () => viewBeneficiaryModal.classList.add('hidden'));
+
+  // Close modals on backdrop click
+  if (viewBeneficiaryModal) {
+    viewBeneficiaryModal.addEventListener('click', (e) => {
+      if (e.target === viewBeneficiaryModal) viewBeneficiaryModal.classList.add('hidden');
+    });
+  }
+  if (beneficiaryModal) {
+    beneficiaryModal.addEventListener('click', (e) => {
+      if (e.target === beneficiaryModal) beneficiaryModal.classList.add('hidden');
+    });
+  }
 
   // =========================================================================
   // 7. MONTHLY ALLOCATION
@@ -544,6 +750,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         opt.value = b._id;
         opt.textContent = `${name} (${cardNo}${loc ? ` - ${loc}` : ''})`;
         allocBeneficiarySelect.appendChild(opt);
+      }
+    });
+  }
+
+  // Pre-fill default Rice and Oil quotas when selecting a beneficiary in allocation
+  if (allocBeneficiarySelect) {
+    allocBeneficiarySelect.addEventListener('change', () => {
+      const selectedId = allocBeneficiarySelect.value;
+      const ben = assignedBeneficiaries.find((b) => b._id && b._id.toString() === selectedId);
+      if (ben) {
+        const riceInput = document.getElementById('allocRiceInput');
+        const oilInput = document.getElementById('allocOilInput');
+        if (riceInput && ben.riceQuota !== undefined && ben.riceQuota !== null) {
+          riceInput.value = ben.riceQuota;
+        }
+        if (oilInput && ben.oilQuota !== undefined && ben.oilQuota !== null) {
+          oilInput.value = ben.oilQuota;
+        }
       }
     });
   }

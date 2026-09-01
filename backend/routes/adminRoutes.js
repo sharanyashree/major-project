@@ -10,6 +10,12 @@ const {
   suspendDistributor,
   activateDistributor,
 
+  // Beneficiary Management & Approvals
+  getAllBeneficiaries,
+  getPendingBeneficiaries,
+  approveBeneficiary,
+  rejectBeneficiary,
+
   // Central Inventory
   getCentralInventory,
   addRiceStock,
@@ -48,7 +54,15 @@ router.patch('/distributors/:id/suspend', suspendDistributor);
 router.patch('/distributors/:id/activate', activateDistributor);
 
 // ==========================================
-// 2. CENTRAL INVENTORY ROUTES
+// 2. BENEFICIARY MANAGEMENT & APPROVAL ROUTES
+// ==========================================
+router.get('/beneficiaries/pending', getPendingBeneficiaries);
+router.get('/beneficiaries', getAllBeneficiaries);
+router.patch('/beneficiaries/:id/approve', approveBeneficiary);
+router.patch('/beneficiaries/:id/reject', rejectBeneficiary);
+
+// ==========================================
+// 3. CENTRAL INVENTORY ROUTES
 // ==========================================
 router.get('/inventory', getCentralInventory);
 router.post('/inventory/rice', addRiceStock);

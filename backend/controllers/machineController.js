@@ -86,6 +86,9 @@ const checkRfid = async (req, res) => {
       year,
     });
 
+    const riceQuota = beneficiary.riceQuota != null ? beneficiary.riceQuota : 0;
+    const oilQuota = beneficiary.oilQuota != null ? beneficiary.oilQuota : 0;
+
     if (!allocation) {
       return res.status(200).json({
         success: true,
@@ -95,15 +98,17 @@ const checkRfid = async (req, res) => {
             _id: beneficiary._id,
             fullName: beneficiary.fullName,
             rationCardNumber: beneficiary.rationCardNumber,
+            riceQuota: riceQuota,
+            oilQuota: oilQuota,
             mobileNumber: beneficiary.mobileNumber,
             assignedDistributor: beneficiary.assignedDistributor,
             status: beneficiary.status,
             rfidUid: beneficiary.rfidUid,
           },
-          riceAllocated: 0,
-          oilAllocated: 0,
-          availableRice: 0,
-          availableOil: 0,
+          riceAllocated: riceQuota,
+          oilAllocated: oilQuota,
+          availableRice: riceQuota,
+          availableOil: oilQuota,
           collectionStatus: 'No Allocation',
         },
       });
@@ -130,6 +135,8 @@ const checkRfid = async (req, res) => {
           _id: beneficiary._id,
           fullName: beneficiary.fullName,
           rationCardNumber: beneficiary.rationCardNumber,
+          riceQuota: riceQuota,
+          oilQuota: oilQuota,
           mobileNumber: beneficiary.mobileNumber,
           assignedDistributor: beneficiary.assignedDistributor,
           status: beneficiary.status,

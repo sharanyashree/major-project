@@ -55,10 +55,20 @@ const beneficiarySchema = new mongoose.Schema(
       ref: 'Distributor',
       default: null,
     },
+    riceQuota: {
+      type: Number,
+      default: 0,
+      min: [0, 'Rice allocation quota cannot be negative'],
+    },
+    oilQuota: {
+      type: Number,
+      default: 0,
+      min: [0, 'Oil allocation quota cannot be negative'],
+    },
     status: {
       type: String,
-      enum: ['Active', 'Inactive', 'Blocked'],
-      default: 'Active',
+      enum: ['Pending', 'Active', 'Approved', 'Rejected', 'Inactive', 'Blocked'],
+      default: 'Pending',
     },
   },
   {

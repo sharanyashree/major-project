@@ -1021,6 +1021,191 @@ const sendNotificationToAllBeneficiaries = async (req, res) => {
   }
 };
 
+// ==========================================
+// 6. BENEFICIARY MANAGEMENT & APPROVALS
+// ==========================================
+
+/**
+ * @desc    View all beneficiaries with filtering
+ * @route   GET /api/admin/beneficiaries
+ * @access  Private (Admin)
+ */
+const getAllBeneficiaries = async (req, res) => {
+  try {
+    const { status, district, taluk, search } = req.query;
+    const filter = {};
+
+    if (status && status !== 'ALL') {
+      filter.status = status;
+    }
+    if (district && district !== 'ALL') {
+      filter.district = district;
+    }
+    if (taluk) {
+      filter.taluk = taluk;
+    }
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
+      filter.$or = [
+        { fullName: { $regex: q, $options: 'i' } },
+        { rationCardNumber: { $regex: q, $options: 'i' } },
+        { mobileNumber: { $regex: q, $options: 'i' } },
+      ];
+    }
+
+    const beneficiaries = await Beneficiary.find(filter)
+      .select('-password')
+      .populate('assignedDistributor', 'name distributorId fpsCode district taluk')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: beneficiaries.length,
+      data: beneficiaries,
+    });
+  } catch (error) {
+    console.error('Error fetching beneficiaries:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve beneficiaries',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    View pending beneficiary registrations waiting for approval
+ * @route   GET /api/admin/beneficiaries/pending
+ * @access  Private (Admin)
+ */
+const getPendingBeneficiaries = async (req, res) => {
+  try {
+    const pendingBeneficiaries = await Beneficiary.find({ status: 'Pending' })
+      .select('-password')
+      .populate('assignedDistributor', 'name distributorId fpsCode district taluk')
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: pendingBeneficiaries.length,
+      data: pendingBeneficiaries,
+    });
+  } catch (error) {
+    console.error('Error fetching pending beneficiaries:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve pending beneficiaries',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Approve beneficiary registration
+ * @route   PATCH /api/admin/beneficiaries/:id/approve
+ * @access  Private (Admin)
+ */
+const approveBeneficiary = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const beneficiary = await Beneficiary.findById(id).populate(
+      'assignedDistributor',
+      'name distributorId fpsCode district taluk'
+    );
+    if (!beneficiary) {
+      return res.status(404).json({
+        success: false,
+        message: 'Beneficiary not found',
+      });
+    }
+
+    beneficiary.status = 'Active';
+    await beneficiary.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Beneficiary approved successfully',
+      data: {
+        _id: beneficiary._id,
+        fullName: beneficiary.fullName,
+        rationCardNumber: beneficiary.rationCardNumber,
+        mobileNumber: beneficiary.mobileNumber,
+        district: beneficiary.district,
+        taluk: beneficiary.taluk,
+        village: beneficiary.village,
+        address: beneficiary.address,
+        familyMemberCount: beneficiary.familyMemberCount,
+        riceQuota: beneficiary.riceQuota,
+        oilQuota: beneficiary.oilQuota,
+        assignedDistributor: beneficiary.assignedDistributor,
+        status: beneficiary.status,
+        updatedAt: beneficiary.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('Error approving beneficiary:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to approve beneficiary',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Reject beneficiary registration
+ * @route   PATCH /api/admin/beneficiaries/:id/reject
+ * @access  Private (Admin)
+ */
+const rejectBeneficiary = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const beneficiary = await Beneficiary.findById(id).populate(
+      'assignedDistributor',
+      'name distributorId fpsCode district taluk'
+    );
+    if (!beneficiary) {
+      return res.status(404).json({
+        success: false,
+        message: 'Beneficiary not found',
+      });
+    }
+
+    beneficiary.status = 'Rejected';
+    await beneficiary.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Beneficiary registration rejected',
+      data: {
+        _id: beneficiary._id,
+        fullName: beneficiary.fullName,
+        rationCardNumber: beneficiary.rationCardNumber,
+        mobileNumber: beneficiary.mobileNumber,
+        district: beneficiary.district,
+        taluk: beneficiary.taluk,
+        village: beneficiary.village,
+        address: beneficiary.address,
+        familyMemberCount: beneficiary.familyMemberCount,
+        riceQuota: beneficiary.riceQuota,
+        oilQuota: beneficiary.oilQuota,
+        assignedDistributor: beneficiary.assignedDistributor,
+        status: beneficiary.status,
+        updatedAt: beneficiary.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('Error rejecting beneficiary:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reject beneficiary',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   // Distributor Management
   getAllDistributors,
@@ -1029,6 +1214,12 @@ module.exports = {
   rejectDistributor,
   suspendDistributor,
   activateDistributor,
+
+  // Beneficiary Management & Approvals
+  getAllBeneficiaries,
+  getPendingBeneficiaries,
+  approveBeneficiary,
+  rejectBeneficiary,
 
   // Central Inventory
   getCentralInventory,

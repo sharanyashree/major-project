@@ -21,6 +21,24 @@ export const authStorage = {
     }
   },
 
+  getUser() {
+    try {
+      const session = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null');
+      return session?.user || null;
+    } catch {
+      return null;
+    }
+  },
+
+  getRole() {
+    try {
+      const session = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null');
+      return session?.role || null;
+    } catch {
+      return null;
+    }
+  },
+
   getSession() {
     try {
       return JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null');
@@ -34,6 +52,10 @@ export const authStorage = {
       localStorage.removeItem(AUTH_STORAGE_KEY);
       return;
     }
+    // Clear any previous session data first to prevent data leaking
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    sessionStorage.clear();
+
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
       token: data.token,
       role: data.role,
@@ -244,6 +266,35 @@ export const adminApi = {
 
   async activateDistributor(id) {
     return await apiRequest(`/api/admin/distributors/${id}/activate`, {
+      method: 'PATCH',
+      requiresAuth: true,
+    });
+  },
+
+  // 1b. Beneficiary Management & Approvals
+  async getAllBeneficiaries(params = {}) {
+    const query = new URLSearchParams();
+    if (params.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params.district && params.district !== 'ALL') query.append('district', params.district);
+    if (params.taluk) query.append('taluk', params.taluk);
+    if (params.search) query.append('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return await apiRequest(`/api/admin/beneficiaries${qs}`, { requiresAuth: true });
+  },
+
+  async getPendingBeneficiaries() {
+    return await apiRequest('/api/admin/beneficiaries/pending', { requiresAuth: true });
+  },
+
+  async approveBeneficiary(id) {
+    return await apiRequest(`/api/admin/beneficiaries/${id}/approve`, {
+      method: 'PATCH',
+      requiresAuth: true,
+    });
+  },
+
+  async rejectBeneficiary(id) {
+    return await apiRequest(`/api/admin/beneficiaries/${id}/reject`, {
       method: 'PATCH',
       requiresAuth: true,
     });

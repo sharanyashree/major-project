@@ -54,7 +54,7 @@
             </a>
           </li>
 
-          <li class="nav-item" data-target="beneficiaries">
+          <li class="nav-item" data-target="beneficiaries" id="navBeneficiaryDetails">
             <a href="#" class="nav-link">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -62,7 +62,7 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              <span class="nav-label">Beneficiaries</span>
+              <span class="nav-label">Beneficiary Details</span>
             </a>
           </li>
 
@@ -392,9 +392,14 @@
                   <strong style="color: var(--color-text-main);">Jurisdiction:</strong>
                   <div style="color: var(--color-text-muted); margin-top: 2px;">Bangalore Urban • North Taluk (Ward 12 & 14)</div>
                 </div>
-                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
-                  <strong style="color: var(--color-text-main);">Total Registered Beneficiaries:</strong>
-                  <div style="color: var(--color-primary); font-weight: 700; font-size: 1.1rem; margin-top: 2px;" id="dashTotalBeneficiariesCount">156 Families</div>
+                <div style="padding: 12px; background: var(--color-bg); border-radius: var(--radius-md); border: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong style="color: var(--color-text-main);">Total Registered Beneficiaries:</strong>
+                    <div style="color: var(--color-primary); font-weight: 700; font-size: 1.1rem; margin-top: 2px;" id="dashTotalBeneficiariesCount">156 Families</div>
+                  </div>
+                  <button class="btn btn-sm btn-outline nav-trigger" data-target="beneficiaries" id="dashBeneficiaryDetailsBtn" title="View Beneficiary Details">
+                    Beneficiary Details
+                  </button>
                 </div>
               </div>
             </div>
@@ -900,10 +905,21 @@
               <input type="tel" class="form-input" id="modalMobile" placeholder="10-digit mobile number" required>
             </div>
 
-            <div class="form-group full-width">
-              <label class="form-label" for="modalStatus">Beneficiary Status <span style="color:red">*</span></label>
-              <select class="form-select" id="modalStatus" required>
-                <option value="Active" selected>Active</option>
+            <div class="form-group">
+              <label class="form-label" for="modalRiceAllowed">Rice Allowed (KG) <span style="color:red">*</span></label>
+              <input type="number" class="form-input" id="modalRiceAllowed" min="0" step="0.5" value="10" placeholder="e.g. 10" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modalOilAllowed">Oil Allowed (Litres) <span style="color:red">*</span></label>
+              <input type="number" class="form-input" id="modalOilAllowed" min="0" step="0.5" value="2" placeholder="e.g. 2" required>
+            </div>
+
+            <div class="form-group full-width" style="display: none;">
+              <label class="form-label" for="modalStatus">Beneficiary Status</label>
+              <select class="form-select" id="modalStatus">
+                <option value="Pending" selected>Pending Admin Approval</option>
+                <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
             </div>

@@ -64,6 +64,19 @@
             </a>
           </li>
 
+          <li class="nav-item" data-target="beneficiaries">
+            <a href="#beneficiaries" class="nav-link">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span class="nav-label">Beneficiary Approvals</span>
+              <span class="nav-badge" id="navPendingBenBadge" style="display:none; background:#EAB308; color:#000;">0</span>
+            </a>
+          </li>
+
           <li class="nav-item" data-target="inventory">
             <a href="#inventory" class="nav-link">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -470,6 +483,86 @@
 
             <div class="table-footer">
               <span class="results-count" id="distributorsCountText">Showing 0 of 0 distributors</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- SECTION: BENEFICIARY APPROVALS & MANAGEMENT -->
+        <!-- =================================================================== -->
+        <section class="content-section hidden" id="beneficiariesSection">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h2 class="card-title">Beneficiary Registrations & Approvals</h2>
+                <p class="card-subtitle">Review pending registrations submitted by FPS distributors and verify authorized Rice & Oil quotas</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" id="refreshBeneficiariesBtn" title="Refresh Beneficiaries List">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  <span>Refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Toolbar & Filters -->
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="beneficiarySearchInput" placeholder="Search by Ration Card Number, Name, or Mobile...">
+              </div>
+
+              <div class="filter-group">
+                <select id="benDistrictFilterSelect" class="form-select">
+                  <option value="ALL">All Districts</option>
+                  <option value="Bangalore Urban">Bangalore Urban</option>
+                  <option value="Bangalore Rural">Bangalore Rural</option>
+                  <option value="Mysore">Mysore</option>
+                  <option value="Belagavi">Belagavi</option>
+                  <option value="Kalaburagi">Kalaburagi</option>
+                  <option value="Mangalore">Mangalore</option>
+                </select>
+
+                <select id="benStatusFilterSelect" class="form-select">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Pending" selected>Pending Approval</option>
+                  <option value="Active">Active / Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Beneficiaries Table -->
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ration Card #</th>
+                    <th>Beneficiary Name</th>
+                    <th>Mobile</th>
+                    <th>District / Taluk</th>
+                    <th>Rice Quota</th>
+                    <th>Oil Quota</th>
+                    <th>Assigned FPS</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="beneficiariesTableBody">
+                  <!-- Populated dynamically by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-footer">
+              <span class="results-count" id="beneficiariesCountText">Showing 0 of 0 beneficiaries</span>
             </div>
           </div>
         </section>
@@ -1087,6 +1180,24 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="confirmViewModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VIEW BENEFICIARY DETAILS -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop hidden" id="viewBeneficiaryModal">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Beneficiary Registration Details</h3>
+        <button class="modal-close-btn" id="closeViewBeneficiaryModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="viewBeneficiaryModalContent">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-footer" id="viewBeneficiaryModalFooter">
+        <button type="button" class="btn btn-primary" id="closeViewBeneficiaryModalFooterBtn">Close</button>
       </div>
     </div>
   </div>

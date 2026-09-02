@@ -1121,6 +1121,7 @@ const approveBeneficiary = async (req, res) => {
     }
 
     beneficiary.status = 'Active';
+    beneficiary.submissionStatus = 'Reviewed';
     await beneficiary.save();
 
     return res.status(200).json({
@@ -1136,10 +1137,13 @@ const approveBeneficiary = async (req, res) => {
         village: beneficiary.village,
         address: beneficiary.address,
         familyMemberCount: beneficiary.familyMemberCount,
+        rfidUid: beneficiary.rfidUid,
         riceQuota: beneficiary.riceQuota,
         oilQuota: beneficiary.oilQuota,
         assignedDistributor: beneficiary.assignedDistributor,
         status: beneficiary.status,
+        submittedToAdmin: beneficiary.submittedToAdmin,
+        submissionStatus: beneficiary.submissionStatus,
         updatedAt: beneficiary.updatedAt,
       },
     });
@@ -1174,6 +1178,7 @@ const rejectBeneficiary = async (req, res) => {
     }
 
     beneficiary.status = 'Rejected';
+    beneficiary.submissionStatus = 'Reviewed';
     await beneficiary.save();
 
     return res.status(200).json({
@@ -1189,10 +1194,13 @@ const rejectBeneficiary = async (req, res) => {
         village: beneficiary.village,
         address: beneficiary.address,
         familyMemberCount: beneficiary.familyMemberCount,
+        rfidUid: beneficiary.rfidUid,
         riceQuota: beneficiary.riceQuota,
         oilQuota: beneficiary.oilQuota,
         assignedDistributor: beneficiary.assignedDistributor,
         status: beneficiary.status,
+        submittedToAdmin: beneficiary.submittedToAdmin,
+        submissionStatus: beneficiary.submissionStatus,
         updatedAt: beneficiary.updatedAt,
       },
     });

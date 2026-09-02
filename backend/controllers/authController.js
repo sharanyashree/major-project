@@ -361,6 +361,30 @@ const beneficiaryRegister = async (req, res) => {
       }
     }
 
+    // If not explicitly provided, assign based on matching district & taluk jurisdiction
+    if (!distributorToAssign && district) {
+      const distRegex = new RegExp(`^${String(district).trim()}$`, 'i');
+      const talukRegex = taluk ? new RegExp(`^${String(taluk).trim()}$`, 'i') : null;
+      let matchedDist = null;
+      if (talukRegex) {
+        matchedDist = await Distributor.findOne({ district: distRegex, taluk: talukRegex });
+      }
+      if (!matchedDist) {
+        matchedDist = await Distributor.findOne({ district: distRegex });
+      }
+      if (!matchedDist) {
+        matchedDist = await Distributor.findOne({});
+      }
+      if (matchedDist) {
+        distributorToAssign = matchedDist._id;
+      }
+    }
+
+    // Default dynamic quota calculation if not provided (e.g., 5kg rice per member min 10kg, 2L oil)
+    const familyCount = Math.max(1, Number(familyMemberCount) || 1);
+    const finalRiceQuota = riceQuota > 0 ? riceQuota : Math.max(10, familyCount * 5);
+    const finalOilQuota = oilQuota > 0 ? oilQuota : Math.max(2, Math.ceil(familyCount * 0.5));
+
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -375,12 +399,14 @@ const beneficiaryRegister = async (req, res) => {
       taluk: String(taluk).trim(),
       village: village ? String(village).trim() : '',
       address: address ? String(address).trim() : '',
-      familyMemberCount: Math.max(1, Number(familyMemberCount) || 1),
+      familyMemberCount: familyCount,
       rfidUid: rfidUid && String(rfidUid).trim() ? String(rfidUid).trim() : undefined,
       assignedDistributor: distributorToAssign,
-      riceQuota: riceQuota,
-      oilQuota: oilQuota,
+      riceQuota: finalRiceQuota,
+      oilQuota: finalOilQuota,
       status: 'Pending',
+      submittedToAdmin: false,
+      submissionStatus: 'Pending Distributor Review',
     });
 
     return res.status(201).json({
@@ -401,6 +427,8 @@ const beneficiaryRegister = async (req, res) => {
         riceQuota: beneficiary.riceQuota,
         oilQuota: beneficiary.oilQuota,
         status: beneficiary.status,
+        submittedToAdmin: beneficiary.submittedToAdmin,
+        submissionStatus: beneficiary.submissionStatus,
         createdAt: beneficiary.createdAt,
       },
     });

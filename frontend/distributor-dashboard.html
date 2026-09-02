@@ -414,15 +414,8 @@
             <div class="card-header flex-header">
               <div>
                 <h3 class="card-title">FPS Beneficiary Directory</h3>
-                <p class="card-subtitle">Manage families and ration cards assigned to FPS-4201</p>
+                <p class="card-subtitle" id="distributorCardSubtitle">Review registered beneficiaries and submit applications to Admin for review</p>
               </div>
-              <button class="btn btn-primary" id="openAddBeneficiaryModalBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"/>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                <span>Add Beneficiary</span>
-              </button>
             </div>
 
             <!-- Toolbar & Filters -->
@@ -432,7 +425,7 @@
                   <circle cx="11" cy="11" r="8"/>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" id="beneficiarySearchInput" placeholder="Search by Card Number, Head of Family, or Mobile...">
+                <input type="text" id="beneficiarySearchInput" placeholder="Search by Card Number, Name, or Mobile...">
               </div>
 
               <div class="filter-group">
@@ -446,8 +439,9 @@
 
                 <select class="form-select" id="statusFilterSelect">
                   <option value="ALL">All Status</option>
+                  <option value="Pending">Pending</option>
                   <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="Rejected">Rejected</option>
                 </select>
               </div>
             </div>
@@ -458,11 +452,11 @@
                 <thead>
                   <tr>
                     <th>Ration Card No</th>
-                    <th>Head of Family</th>
-                    <th>Village / Ward</th>
-                    <th>Members</th>
-                    <th>Card Type</th>
+                    <th>User Name</th>
                     <th>Mobile Number</th>
+                    <th>District / Taluk</th>
+                    <th>Rice Quota</th>
+                    <th>Oil Quota</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -475,7 +469,7 @@
 
             <div class="table-footer">
               <span id="beneficiariesCountText">Showing 0 beneficiaries</span>
-              <span>FPS Jurisdiction: Bangalore Urban North</span>
+              <span id="distributorJurisdictionText">FPS Center Operations</span>
             </div>
           </div>
         </section>

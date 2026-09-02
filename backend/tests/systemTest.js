@@ -115,10 +115,13 @@ async function runAllTests() {
 
     recordResult(
       4,
-      'Beneficiary registration',
-      benRegRes.status === 201 && benRegRes.body.data.status === 'Active',
+      'Beneficiary registration (starts as Pending)',
+      benRegRes.status === 201 && benRegRes.body.data.status === 'Pending',
       `Status: ${benRegRes.status}`
     );
+
+    // Activate beneficiary so login succeeds for downstream tests
+    await Beneficiary.findByIdAndUpdate(benRegRes.body.data._id, { status: 'Active' });
 
     const benLoginRes = await request(app)
       .post('/api/auth/beneficiary/login')
@@ -128,7 +131,7 @@ async function runAllTests() {
     const beneficiaryId = benLoginRes.body.data._id;
     recordResult(
       4,
-      'Beneficiary login',
+      'Beneficiary login (after activation)',
       benLoginRes.status === 200 && !!beneficiaryToken,
       `Status: ${benLoginRes.status}`
     );

@@ -438,8 +438,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const cardNo = (b.rationCardNumber || b.rationCardNo || '').toLowerCase();
       const name = (b.fullName || b.headOfFamily || '').toLowerCase();
       const mobile = (b.mobileNumber || '').toLowerCase();
-      const location = (b.village || b.taluk || b.district || '').toLowerCase();
-      const status = (b.status || 'Active').toLowerCase();
+      const location = `${b.district || ''} ${b.taluk || ''} ${b.village || ''}`.toLowerCase();
+      const status = (b.status || 'Pending').toLowerCase();
 
       const matchQuery =
         cardNo.includes(query) ||
@@ -460,39 +460,82 @@ document.addEventListener('DOMContentLoaded', async () => {
         beneficiariesTableBody.innerHTML = `
           <tr>
             <td colspan="8" style="text-align: center; padding: 24px; color: #64748B;">
-              No assigned beneficiary records found matching your filters.
+              No beneficiary records found matching your filters.
             </td>
           </tr>
         `;
       } else {
         filtered.forEach((ben, index) => {
           const tr = document.createElement('tr');
-          const cardType = ben.cardCategory || ben.cardType || 'PHH';
-          let cardBadge = 'badge-primary';
-          if (cardType === 'AAY') cardBadge = 'badge-warning';
-          if (cardType === 'NPHH') cardBadge = 'badge-info';
+          const cardNo = ben.rationCardNumber || ben.rationCardNo || 'N/A';
+          const name = ben.fullName || ben.headOfFamily || 'Beneficiary';
+          const mobile = ben.mobileNumber || 'N/A';
+          const location = [ben.district, ben.taluk].filter(Boolean).join(' / ') || ben.village || 'Assigned Area';
+          const riceQuota = ben.riceQuota ?? ben.riceAllowed ?? 0;
+          const oilQuota = ben.oilQuota ?? ben.oilAllowed ?? 0;
+          const isSubmitted = !!ben.submittedToAdmin || ben.submissionStatus === 'Submitted for Admin Review';
 
           const status = ben.status || 'Pending';
           let statusBadge = 'badge-warning';
-          if (status === 'Active' || status === 'Approved') statusBadge = 'badge-success';
-          else if (status === 'Rejected' || status === 'Inactive') statusBadge = 'badge-danger';
-          else if (status === 'Pending') statusBadge = 'badge-warning';
-          const members = ben.familyMemberCount ?? ben.familyMembers ?? 1;
-          const location = ben.village || ben.taluk || ben.district || 'Assigned Area';
+          let statusLabel = status;
+
+          if (status === 'Active' || status === 'Approved') {
+            statusBadge = 'badge-success';
+            statusLabel = 'Active';
+          } else if (status === 'Rejected') {
+            statusBadge = 'badge-danger';
+            statusLabel = 'Rejected';
+          } else if (status === 'Pending') {
+            if (isSubmitted) {
+              statusLabel = 'Under Admin Review';
+            } else {
+              statusLabel = 'Pending';
+            }
+          }
+
+          let actionContent = '';
+          if (status === 'Pending') {
+            if (!isSubmitted) {
+              actionContent = `
+                <button class="btn btn-sm btn-primary submit-ben-btn" data-id="${ben._id}" style="padding: 4px 10px; font-size: 0.75rem; background: #2563EB; font-weight: 600;" title="Submit user request to Admin for review">
+                  Submit
+                </button>
+              `;
+            } else {
+              actionContent = `
+                <span class="badge" style="font-size: 0.75rem; background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; padding: 4px 8px;">
+                  Submitted
+                </span>
+              `;
+            }
+          } else if (status === 'Active' || status === 'Approved') {
+            actionContent = `
+              <span style="font-size: 0.75rem; color: #059669; font-weight: 600; padding: 4px 6px;">
+                Approved
+              </span>
+            `;
+          } else if (status === 'Rejected') {
+            actionContent = `
+              <span style="font-size: 0.75rem; color: #DC2626; font-weight: 600; padding: 4px 6px;">
+                Rejected
+              </span>
+            `;
+          }
 
           tr.innerHTML = `
-            <td><strong>${ben.rationCardNumber || ben.rationCardNo}</strong></td>
-            <td>${ben.fullName || ben.headOfFamily}</td>
+            <td><strong>${cardNo}</strong></td>
+            <td>${name}</td>
+            <td>${mobile}</td>
             <td>${location}</td>
-            <td><strong>${members}</strong> Members</td>
-            <td><span class="badge ${cardBadge}">${cardType}</span></td>
-            <td>${ben.mobileNumber || 'N/A'}</td>
-            <td><span class="badge ${statusBadge}">${status}</span></td>
+            <td><strong>${riceQuota}</strong> KG</td>
+            <td><strong>${oilQuota}</strong> L</td>
+            <td><span class="badge ${statusBadge}">${statusLabel}</span></td>
             <td>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn-icon view-ben-btn" data-id="${ben._id || index}" title="View Details">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="btn btn-sm btn-outline view-ben-btn" data-id="${ben._id || index}" title="View Details" style="padding: 4px 8px; font-size: 0.75rem;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right: 4px; vertical-align: middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View
                 </button>
+                ${actionContent}
               </div>
             </td>
           `;
@@ -516,106 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (villageFilterSelect) villageFilterSelect.addEventListener('change', renderBeneficiaries);
   if (statusFilterSelect) statusFilterSelect.addEventListener('change', renderBeneficiaries);
 
-  // Add Beneficiary Modal Open/Close Handlers
-  if (openAddBeneficiaryModalBtn) {
-    openAddBeneficiaryModalBtn.addEventListener('click', () => {
-      if (beneficiaryForm) beneficiaryForm.reset();
-      const editIdx = document.getElementById('editBeneficiaryIndex');
-      if (editIdx) editIdx.value = '-1';
-      if (beneficiaryModalTitle) beneficiaryModalTitle.textContent = 'Add New Beneficiary Family';
-      if (beneficiaryModal) beneficiaryModal.classList.remove('hidden');
-    });
-  }
-
-  if (closeBeneficiaryModalBtn) {
-    closeBeneficiaryModalBtn.addEventListener('click', () => {
-      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
-    });
-  }
-
-  if (cancelBeneficiaryModalBtn) {
-    cancelBeneficiaryModalBtn.addEventListener('click', () => {
-      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
-    });
-  }
-
-  // Handle Add/Edit Beneficiary Form Submit
-  if (beneficiaryForm) {
-    beneficiaryForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const rationCardNo = document.getElementById('modalRationCardNo')?.value.trim();
-      const headOfFamily = document.getElementById('modalHeadOfFamily')?.value.trim();
-      const village = document.getElementById('modalVillage')?.value.trim();
-      const familyMembers = parseInt(document.getElementById('modalFamilyMembers')?.value, 10) || 1;
-      const cardType = document.getElementById('modalCardType')?.value || 'PHH';
-      const mobileNumber = document.getElementById('modalMobile')?.value.trim();
-      const riceAllowed = Math.max(0, parseFloat(document.getElementById('modalRiceAllowed')?.value) || 0);
-      const oilAllowed = Math.max(0, parseFloat(document.getElementById('modalOilAllowed')?.value) || 0);
-      const status = document.getElementById('modalStatus')?.value || 'Pending';
-
-      const payload = {
-        fullName: headOfFamily,
-        rationCardNumber: rationCardNo,
-        mobileNumber: mobileNumber,
-        district: distributorProfile?.district || 'Bangalore Urban',
-        taluk: distributorProfile?.taluk || 'North',
-        village: village,
-        familyMemberCount: familyMembers,
-        cardCategory: cardType,
-        riceQuota: riceAllowed,
-        oilQuota: oilAllowed,
-        riceAllowed: riceAllowed,
-        oilAllowed: oilAllowed,
-        status: status,
-      };
-
-      const newBeneficiary = {
-        _id: 'ben_' + Date.now(),
-        rationCardNumber: rationCardNo,
-        rationCardNo: rationCardNo,
-        fullName: headOfFamily,
-        headOfFamily: headOfFamily,
-        village: village,
-        familyMemberCount: familyMembers,
-        familyMembers: familyMembers,
-        cardCategory: cardType,
-        cardType: cardType,
-        mobileNumber: mobileNumber,
-        riceQuota: riceAllowed,
-        oilQuota: oilAllowed,
-        riceAllowed: riceAllowed,
-        oilAllowed: oilAllowed,
-        status: status,
-      };
-
-      // Try registering via API if available, fallback gracefully
-      try {
-        if (typeof authApi !== 'undefined' && authApi.beneficiaryRegister) {
-          const res = await authApi.beneficiaryRegister({
-            ...payload,
-            password: 'Password@123',
-            assignedDistributor: distributorProfile?._id,
-          });
-          if (res && res.success && res.data) {
-            newBeneficiary._id = res.data._id || newBeneficiary._id;
-            if (res.data.riceQuota !== undefined) newBeneficiary.riceQuota = res.data.riceQuota;
-            if (res.data.oilQuota !== undefined) newBeneficiary.oilQuota = res.data.oilQuota;
-          }
-        }
-      } catch (err) {
-        console.warn('API registration non-blocking fallback:', err);
-      }
-
-      assignedBeneficiaries.unshift(newBeneficiary);
-      populateVillageFilter(assignedBeneficiaries);
-      renderBeneficiaries();
-      populateAllocationDropdown();
-      if (beneficiaryModal) beneficiaryModal.classList.add('hidden');
-      showToast(`Beneficiary ${headOfFamily} (${rationCardNo}) registered (Status: Pending Admin Approval) with ${riceAllowed} KG Rice & ${oilAllowed} L Oil quota.`);
-    });
-  }
-
-  // Table Action Event Delegation for Beneficiaries (View Beneficiary Details)
+  // Table Action Event Delegation for Beneficiaries (View Beneficiary Details & Submit)
   if (beneficiariesTableBody) {
     beneficiariesTableBody.addEventListener('click', async (e) => {
       const btn = e.target.closest('button');
@@ -624,6 +568,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       const id = btn.getAttribute('data-id');
       const ben = assignedBeneficiaries.find((b, idx) => (b._id && b._id.toString() === id) || idx.toString() === id);
       if (!ben) return;
+
+      // Handle Submit to Admin Action
+      if (btn.classList.contains('submit-ben-btn') || btn.closest('.submit-ben-btn')) {
+        const benName = ben.fullName || ben.headOfFamily || 'Beneficiary';
+        const cardNo = ben.rationCardNumber || ben.rationCardNo || 'N/A';
+        const confirmSubmit = confirm(`Submit application of ${benName} (${cardNo}) to Admin for quota and eligibility review?`);
+        if (!confirmSubmit) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        try {
+          const submitRes = await distributorApi.submitBeneficiaryToAdmin(ben._id);
+          if (submitRes && submitRes.success) {
+            showToast(`Application for ${benName} submitted to Admin successfully.`);
+            await loadAssignedBeneficiaries();
+          } else {
+            showToast(submitRes?.message || 'Failed to submit application. Please retry.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Submit';
+          }
+        } catch (err) {
+          console.error('Error submitting beneficiary:', err);
+          showToast(err.message || 'Failed to submit application to Admin.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Submit';
+        }
+        return;
+      }
 
       if (btn.classList.contains('view-ben-btn') || btn.closest('.view-ben-btn')) {
         const fpsCode = distributorProfile?.fpsCode || 'FPS-4201';

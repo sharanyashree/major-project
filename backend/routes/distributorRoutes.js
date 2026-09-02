@@ -11,6 +11,7 @@ const {
   getAssignedBeneficiaries,
   searchBeneficiaryByRationCard,
   getBeneficiaryDetails,
+  submitBeneficiaryToAdmin,
 
   // Monthly Allocation
   allocateRation,
@@ -49,6 +50,8 @@ router.get('/inventory', getInventory);
 // ==========================================
 router.get('/beneficiaries', getAssignedBeneficiaries);
 router.get('/beneficiaries/search', searchBeneficiaryByRationCard);
+router.patch('/beneficiaries/:id/submit', submitBeneficiaryToAdmin);
+router.post('/beneficiaries/:id/submit', submitBeneficiaryToAdmin);
 router.get('/beneficiaries/:id', getBeneficiaryDetails);
 
 // ==========================================

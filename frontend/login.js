@@ -18,17 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
       label: 'Ration Card Number',
       placeholder: 'Enter Ration Card Number (e.g. RC98765432)',
       iconSvg: `<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>`,
-      minLength: 6,
+      minLength: 4,
       errorEmpty: 'Please enter your Ration Card Number.',
-      errorInvalid: 'Ration Card Number must be at least 6 characters long.'
+      errorInvalid: 'Ration Card Number must be at least 4 characters long.'
     },
     distributor: {
       label: 'Distributor ID',
       placeholder: 'Enter Distributor ID (e.g. DIST-8842)',
       iconSvg: `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
-      minLength: 5,
+      minLength: 4,
       errorEmpty: 'Please enter your Distributor ID.',
-      errorInvalid: 'Distributor ID must be at least 5 characters long.'
+      errorInvalid: 'Distributor ID must be at least 4 characters long.'
     },
     admin: {
       label: 'Admin ID',

@@ -166,11 +166,28 @@ const getDashboardSummary = async (req, res) => {
  */
 const getAssignedBeneficiaries = async (req, res) => {
   try {
-    const beneficiaries = await Beneficiary.find({
-      assignedDistributor: req.user.id,
-    })
+    const distributor = await Distributor.findById(req.user.id);
+    const query = {
+      $or: [
+        { assignedDistributor: req.user.id },
+        ...(distributor && distributor.district ? [
+          {
+            assignedDistributor: null,
+            district: { $regex: new RegExp(`^${distributor.district}$`, 'i') },
+            ...(distributor.taluk ? { taluk: { $regex: new RegExp(`^${distributor.taluk}$`, 'i') } } : {})
+          },
+          {
+            assignedDistributor: null,
+            district: { $regex: new RegExp(`^${distributor.district}$`, 'i') }
+          }
+        ] : [])
+      ]
+    };
+
+    const beneficiaries = await Beneficiary.find(query)
       .select('-password')
-      .sort({ fullName: 1 });
+      .populate('assignedDistributor', 'name distributorId fpsCode storeName district taluk mobileNumber')
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -182,6 +199,78 @@ const getAssignedBeneficiaries = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to retrieve assigned beneficiaries',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Submit beneficiary registration request to Admin for review
+ * @route   PATCH /api/distributor/beneficiaries/:id/submit
+ * @access  Private (Distributor)
+ */
+const submitBeneficiaryToAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const distributorId = req.user.id;
+    const distributor = await Distributor.findById(distributorId);
+
+    // Find beneficiary assigned to this distributor or in distributor jurisdiction
+    const beneficiary = await Beneficiary.findOne({
+      _id: id,
+      $or: [
+        { assignedDistributor: distributorId },
+        ...(distributor && distributor.district ? [
+          {
+            assignedDistributor: null,
+            district: { $regex: new RegExp(`^${distributor.district}$`, 'i') }
+          }
+        ] : [])
+      ]
+    });
+
+    if (!beneficiary) {
+      return res.status(404).json({
+        success: false,
+        message: 'Beneficiary record not found or not in your FPS jurisdiction',
+      });
+    }
+
+    // Check if already approved or already submitted
+    if (beneficiary.status === 'Active' || beneficiary.status === 'Approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'This beneficiary is already approved and active.',
+        data: beneficiary,
+      });
+    }
+
+    if (beneficiary.submittedToAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: 'This beneficiary request has already been submitted for Admin review.',
+        data: beneficiary,
+      });
+    }
+
+    // Update the record to submitted state (reusing the same record)
+    beneficiary.assignedDistributor = distributorId;
+    beneficiary.submittedToAdmin = true;
+    beneficiary.submittedAt = new Date();
+    beneficiary.submissionStatus = 'Submitted for Admin Review';
+    beneficiary.status = 'Pending'; // Remains Pending until Admin makes decision
+    await beneficiary.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User application for ${beneficiary.fullName} (${beneficiary.rationCardNumber}) successfully submitted to Admin for quota and eligibility review.`,
+      data: beneficiary,
+    });
+  } catch (error) {
+    console.error('Error submitting beneficiary to admin:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to submit beneficiary for admin review',
       error: error.message,
     });
   }
@@ -1027,6 +1116,7 @@ module.exports = {
   getAssignedBeneficiaries,
   searchBeneficiaryByRationCard,
   getBeneficiaryDetails,
+  submitBeneficiaryToAdmin,
 
   // Monthly Allocation
   allocateRation,

@@ -449,6 +449,13 @@ export const distributorApi = {
     });
   },
 
+  async submitBeneficiaryToAdmin(id) {
+    return await apiRequest(`/api/distributor/beneficiaries/${id}/submit`, {
+      method: 'PATCH',
+      requiresAuth: true,
+    });
+  },
+
   async searchBeneficiary(rationCardNumber) {
     const query = rationCardNumber ? `?rationCardNumber=${encodeURIComponent(rationCardNumber)}` : '';
     return await apiRequest(`/api/distributor/beneficiaries/search${query}`, {

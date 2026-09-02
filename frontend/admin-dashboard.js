@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   let rawDistributors = [];
   let rawBeneficiaries = [];
+  let rawUsers = [];
   let centralInventory = { riceStock: 0, oilStock: 0, minimumStock: 500 };
   let distributorInventories = [];
   let rawDispatches = [];
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sectionTitles = {
     dashboard: 'Dashboard Overview',
     distributors: 'Distributor Management',
+    users: 'User Management',
     beneficiaries: 'Beneficiary Approvals & Management',
     inventory: 'Central Warehouse Inventory',
     dispatch: 'Stock Dispatch Management',
@@ -150,6 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Refresh specific section data on switch
     if (targetKey === 'distributors') loadDistributors();
+    if (targetKey === 'users') loadUsers();
+    if (targetKey === 'beneficiaries') loadBeneficiaries();
     if (targetKey === 'inventory') loadCentralInventory();
     if (targetKey === 'dispatch') loadDispatches();
     if (targetKey === 'reports') loadReports();
@@ -523,6 +527,285 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (closeViewModalBtn) closeViewModalBtn.addEventListener('click', () => viewDistributorModal.classList.add('hidden'));
   if (confirmViewModalBtn) confirmViewModalBtn.addEventListener('click', () => viewDistributorModal.classList.add('hidden'));
+
+  // =========================================================================
+  // 5a. USER MANAGEMENT
+  // =========================================================================
+  const usersTableBody = document.getElementById('usersTableBody');
+  const userSearchInput = document.getElementById('userSearchInput');
+  const userDistrictFilterSelect = document.getElementById('userDistrictFilterSelect');
+  const userStatusFilterSelect = document.getElementById('userStatusFilterSelect');
+  const usersCountText = document.getElementById('usersCountText');
+  const refreshUsersBtn = document.getElementById('refreshUsersBtn');
+
+  const viewUserModal = document.getElementById('viewUserModal');
+  const viewUserModalContent = document.getElementById('viewUserModalContent');
+  const closeViewUserModalBtn = document.getElementById('closeViewUserModalBtn');
+  const closeViewUserModalFooterBtn = document.getElementById('closeViewUserModalFooterBtn');
+
+  async function loadUsers() {
+    try {
+      const statusVal = userStatusFilterSelect ? userStatusFilterSelect.value : 'ALL';
+      const districtVal = userDistrictFilterSelect ? userDistrictFilterSelect.value : 'ALL';
+
+      const res = await adminApi.getAllBeneficiaries({
+        status: statusVal,
+        district: districtVal,
+      });
+
+      rawUsers = res.data || [];
+      renderUsersTable();
+    } catch (err) {
+      console.error('Failed to load registered users:', err);
+      showToast(`Error loading users: ${err.message}`);
+      if (usersTableBody) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 28px; color: #DC2626;">
+              Failed to load user records from database. Please try refreshing.
+            </td>
+          </tr>
+        `;
+      }
+    }
+  }
+
+  function renderUsersTable() {
+    const query = userSearchInput ? userSearchInput.value.toLowerCase().trim() : '';
+    const districtFilter = userDistrictFilterSelect ? userDistrictFilterSelect.value : 'ALL';
+    const statusFilter = userStatusFilterSelect ? userStatusFilterSelect.value : 'ALL';
+
+    const filtered = rawUsers.filter(u => {
+      const uCard = (u.rationCardNumber || '').toLowerCase();
+      const uName = (u.fullName || '').toLowerCase();
+      const uMobile = (u.mobileNumber || '').toLowerCase();
+      const uDist = (u.district || '').toLowerCase();
+      const uTaluk = (u.taluk || '').toLowerCase();
+      const uVillage = (u.village || '').toLowerCase();
+      const distName = (u.assignedDistributor && u.assignedDistributor.name ? u.assignedDistributor.name : '').toLowerCase();
+
+      const matchQuery =
+        !query ||
+        uCard.includes(query) ||
+        uName.includes(query) ||
+        uMobile.includes(query) ||
+        uDist.includes(query) ||
+        uTaluk.includes(query) ||
+        uVillage.includes(query) ||
+        distName.includes(query);
+
+      const matchDistrict = districtFilter === 'ALL' || u.district === districtFilter;
+      const matchStatus = statusFilter === 'ALL' || u.status === statusFilter;
+
+      return matchQuery && matchDistrict && matchStatus;
+    });
+
+    if (usersTableBody) {
+      usersTableBody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 28px; color: #64748B;">
+              No registered user records found matching the criteria.
+            </td>
+          </tr>
+        `;
+      } else {
+        filtered.forEach((user) => {
+          const tr = document.createElement('tr');
+          const userId = user._id || user.id;
+
+          let badgeClass = 'badge-primary';
+          let statusDisplay = user.status || 'Pending';
+          const isSubmitted = !!user.submittedToAdmin || user.submissionStatus === 'Submitted for Admin Review';
+
+          if (user.status === 'Active' || user.status === 'Approved') {
+            badgeClass = 'badge-success';
+            statusDisplay = 'Active';
+          } else if (user.status === 'Pending') {
+            if (isSubmitted) {
+              badgeClass = 'badge-warning';
+              statusDisplay = 'Pending (Submitted)';
+            } else {
+              badgeClass = 'badge-secondary';
+              statusDisplay = 'Awaiting Review';
+            }
+          } else if (user.status === 'Rejected' || user.status === 'Suspended') {
+            badgeClass = 'badge-danger';
+            statusDisplay = 'Rejected';
+          } else if (user.status === 'Inactive' || user.status === 'Blocked') {
+            badgeClass = 'badge-danger';
+            statusDisplay = 'Inactive';
+          }
+
+          // Action buttons: View Details + actions
+          let actionButtons = `
+            <button class="btn-icon view-user-btn" data-id="${userId}" title="View Details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          `;
+
+          if (user.status === 'Pending') {
+            if (isSubmitted) {
+              actionButtons += `
+                <button class="btn btn-sm btn-primary approve-user-btn" data-id="${userId}" style="padding: 3px 8px; font-size: 0.75rem; background: #059669;" title="Approve Registration">
+                  Approve
+                </button>
+                <button class="btn btn-sm btn-outline reject-user-btn" data-id="${userId}" style="padding: 3px 8px; font-size: 0.75rem; color: #DC2626; border-color: #DC2626;" title="Reject Registration">
+                  Reject
+                </button>
+              `;
+            } else {
+              actionButtons += `
+                <span style="font-size: 0.72rem; color: #64748B; font-style: italic; padding: 2px 4px;" title="Awaiting Distributor Review & Submission">
+                  Awaiting Distributor
+                </span>
+              `;
+            }
+          } else if (user.status === 'Active' || user.status === 'Approved') {
+            actionButtons += `
+              <button class="btn btn-sm btn-outline reject-user-btn" data-id="${userId}" style="padding: 3px 8px; font-size: 0.75rem; color: #DC2626; border-color: #DC2626;" title="Reject/Revoke User">
+                Reject
+              </button>
+            `;
+          } else if (user.status === 'Rejected') {
+            actionButtons += `
+              <button class="btn btn-sm btn-primary approve-user-btn" data-id="${userId}" style="padding: 3px 8px; font-size: 0.75rem; background: #059669;" title="Re-approve User">
+                Approve
+              </button>
+            `;
+          }
+
+          tr.innerHTML = `
+            <td><strong>${user.fullName || 'N/A'}</strong></td>
+            <td><strong style="color: #2563EB;">${user.rationCardNumber || 'N/A'}</strong></td>
+            <td>${user.mobileNumber || 'N/A'}</td>
+            <td>${user.district || 'N/A'}</td>
+            <td>${user.taluk || 'N/A'}</td>
+            <td><span class="badge ${badgeClass}">${statusDisplay}</span></td>
+            <td><strong style="color: #059669;">${user.riceQuota != null ? user.riceQuota : 0} KG</strong></td>
+            <td><strong style="color: #0284C7;">${user.oilQuota != null ? user.oilQuota : 0} L</strong></td>
+            <td>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                ${actionButtons}
+              </div>
+            </td>
+          `;
+
+          usersTableBody.appendChild(tr);
+        });
+      }
+    }
+
+    if (usersCountText) {
+      usersCountText.textContent = `Showing ${filtered.length} of ${rawUsers.length} registered users`;
+    }
+  }
+
+  // User Management Table Event Delegation
+  if (usersTableBody) {
+    usersTableBody.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      const userId = btn.getAttribute('data-id');
+      const user = rawUsers.find(u => (u._id || u.id) === userId);
+      if (!user) return;
+
+      // 1. View Complete User Details Modal
+      if (btn.classList.contains('view-user-btn')) {
+        if (viewUserModalContent && viewUserModal) {
+          const distInfo = user.assignedDistributor
+            ? `${user.assignedDistributor.name || 'Distributor'} (FPS: ${user.assignedDistributor.fpsCode || 'N/A'}, Phone: ${user.assignedDistributor.mobileNumber || 'N/A'})`
+            : 'Unassigned';
+
+          const submissionBadge = user.submittedToAdmin
+            ? '<span class="badge badge-info" style="background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;">Submitted by Distributor for Admin Review</span>'
+            : '<span class="badge badge-warning" style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">Pending Distributor Review</span>';
+
+          const statusBadge = (user.status === 'Active' || user.status === 'Approved')
+            ? '<span class="badge badge-success">Active / Approved</span>'
+            : (user.status === 'Pending')
+            ? '<span class="badge badge-warning">Pending Approval</span>'
+            : '<span class="badge badge-danger">' + (user.status || 'Inactive') + '</span>';
+
+          viewUserModalContent.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 0.9rem; margin-bottom: 12px;">
+              <div><strong>User / Full Name:</strong><br>${user.fullName || 'N/A'}</div>
+              <div><strong>Ration Card # / User ID:</strong><br><strong style="color: #2563EB;">${user.rationCardNumber || 'N/A'}</strong></div>
+              <div><strong>Mobile Number:</strong><br>${user.mobileNumber || 'N/A'}</div>
+              <div><strong>Family Members:</strong><br>${user.familyMemberCount != null ? user.familyMemberCount : '1'}</div>
+              <div><strong>District:</strong><br>${user.district || 'N/A'}</div>
+              <div><strong>Taluk:</strong><br>${user.taluk || 'N/A'}</div>
+              <div><strong>Village / Ward:</strong><br>${user.village || 'N/A'}</div>
+              <div><strong>Address:</strong><br>${user.address || 'N/A'}</div>
+              <div style="background: #F0FDF4; padding: 10px; border-radius: 6px; border: 1px solid #BBF7D0;">
+                <strong style="color: #166534;">Rice Quota Allocation:</strong><br>
+                <span style="font-size: 1.1rem; font-weight: 700; color: #15803D;">${user.riceQuota != null ? user.riceQuota : 0} KG</span>
+              </div>
+              <div style="background: #F0F9FF; padding: 10px; border-radius: 6px; border: 1px solid #BAE6FD;">
+                <strong style="color: #075985;">Oil Quota Allocation:</strong><br>
+                <span style="font-size: 1.1rem; font-weight: 700; color: #0284C7;">${user.oilQuota != null ? user.oilQuota : 0} Litres</span>
+              </div>
+              <div><strong>RFID Tag UID:</strong><br><span style="font-family: monospace; color: #4338CA;">${user.rfidUid || 'Not Assigned'}</span></div>
+              <div><strong>Workflow Status:</strong><br>${submissionBadge}</div>
+              <div><strong>Account Status:</strong><br>${statusBadge}</div>
+              <div style="grid-column: span 2;">
+                <strong>Assigned FPS Distributor:</strong><br>
+                <span style="color: #475569;">${distInfo}</span>
+              </div>
+              <div style="grid-column: span 2;">
+                <strong>Registration Date:</strong><br>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}
+              </div>
+            </div>
+          `;
+          viewUserModal.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // 2. Approve User Action
+      if (btn.classList.contains('approve-user-btn')) {
+        if (confirm(`Approve beneficiary application for ${user.fullName} (Card: ${user.rationCardNumber}) with Rice: ${user.riceQuota || 0}KG, Oil: ${user.oilQuota || 0}L?`)) {
+          try {
+            const res = await adminApi.approveBeneficiary(userId);
+            showToast(res.message || `User ${user.fullName} approved successfully.`);
+            addSystemNotification('User Approved', `Approved ration quota for ${user.fullName} (${user.rationCardNumber}): ${user.riceQuota || 0}KG Rice, ${user.oilQuota || 0}L Oil.`);
+            await loadUsers();
+            if (typeof loadBeneficiaries === 'function') loadBeneficiaries();
+          } catch (err) {
+            showToast(`Approve error: ${err.message}`);
+          }
+        }
+        return;
+      }
+
+      // 3. Reject User Action
+      if (btn.classList.contains('reject-user-btn')) {
+        if (confirm(`Reject beneficiary application for ${user.fullName} (Card: ${user.rationCardNumber})?`)) {
+          try {
+            const res = await adminApi.rejectBeneficiary(userId);
+            showToast(res.message || `User ${user.fullName} application rejected.`);
+            addSystemNotification('User Rejected', `Rejected application for ${user.fullName} (${user.rationCardNumber}).`);
+            await loadUsers();
+            if (typeof loadBeneficiaries === 'function') loadBeneficiaries();
+          } catch (err) {
+            showToast(`Reject error: ${err.message}`);
+          }
+        }
+        return;
+      }
+    });
+  }
+
+  if (userSearchInput) userSearchInput.addEventListener('input', renderUsersTable);
+  if (userDistrictFilterSelect) userDistrictFilterSelect.addEventListener('change', loadUsers);
+  if (userStatusFilterSelect) userStatusFilterSelect.addEventListener('change', loadUsers);
+  if (refreshUsersBtn) refreshUsersBtn.addEventListener('click', loadUsers);
+
+  if (closeViewUserModalBtn) closeViewUserModalBtn.addEventListener('click', () => viewUserModal.classList.add('hidden'));
+  if (closeViewUserModalFooterBtn) closeViewUserModalFooterBtn.addEventListener('click', () => viewUserModal.classList.add('hidden'));
 
   // =========================================================================
   // 5b. BENEFICIARY APPROVALS & MANAGEMENT
@@ -1395,6 +1678,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   Promise.all([
     loadDistributors(),
+    loadUsers(),
     loadBeneficiaries(),
     loadCentralInventory(),
     loadDispatches(),

@@ -70,6 +70,25 @@ const beneficiarySchema = new mongoose.Schema(
       enum: ['Pending', 'Active', 'Approved', 'Rejected', 'Inactive', 'Blocked'],
       default: 'Pending',
     },
+    submittedToAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    submittedAt: {
+      type: Date,
+      default: null,
+    },
+    submissionStatus: {
+      type: String,
+      enum: [
+        'Pending Distributor Review',
+        'Submitted for Admin Review',
+        'Under Admin Review',
+        'Reviewed',
+        'None',
+      ],
+      default: 'Pending Distributor Review',
+    },
   },
   {
     timestamps: true,

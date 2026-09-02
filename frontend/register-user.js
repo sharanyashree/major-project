@@ -216,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showFieldError(rationCardInput, rationCardError, 'Please enter your Ration Card Number.');
       isValid = false;
       if (!firstErrorField) firstErrorField = rationCardInput;
-    } else if (rationCardVal.length < 6) {
-      showFieldError(rationCardInput, rationCardError, 'Ration Card Number must be at least 6 characters.');
+    } else if (rationCardVal.length < 4) {
+      showFieldError(rationCardInput, rationCardError, 'Ration Card Number must be at least 4 characters.');
       isValid = false;
       if (!firstErrorField) firstErrorField = rationCardInput;
     }

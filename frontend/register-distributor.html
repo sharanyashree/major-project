@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ration Distribution System - Distributor Registration</title>
+  <link rel="stylesheet" href="register-distributor.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Decorative Shapes -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+    <div class="register-card">
+      
+      <!-- LEFT SECTION (40%) -->
+      <section class="left-section">
+        <div class="left-overlay"></div>
+        <div class="left-content">
+          <div class="left-top">
+            
+            <h1 class="system-title">Ration Distribution System</h1>
+          </div>
+
+          <div class="left-bottom">
+            <div class="copyright-text">
+              &copy; 2026 Ration Distribution System. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SECTION (60%) -->
+      <section class="right-section">
+        <div class="form-header">
+          <div class="header-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Fair Price Shop Licensee</span>
+          </div>
+          <h2 class="form-title">Distributor Registration</h2>
+          <p class="form-subtitle">Register a Fair Price Shop (FPS) distributor account.</p>
+        </div>
+
+        <!-- Alert Message Box -->
+        <div id="alertBox" class="alert-box hidden" role="alert">
+          <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="alertMessage">Please fix the highlighted errors below.</span>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registerDistributorForm" class="register-form" novalidate>
+          <div class="form-grid">
+
+            <!-- 1. Full Name -->
+            <div class="form-group">
+              <label for="fullNameInput" class="form-label">
+                Full Name <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="fullNameInput" 
+                  name="fullName"
+                  class="form-input" 
+                  placeholder="Licensee's full name" 
+                  required
+                >
+              </div>
+              <div id="fullNameError" class="error-text"></div>
+            </div>
+
+            <!-- 2. Distributor ID -->
+            <div class="form-group">
+              <label for="distributorIdInput" class="form-label">
+                Distributor ID <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="distributorIdInput" 
+                  name="distributorId"
+                  class="form-input" 
+                  placeholder="e.g. DIST-8842" 
+                  required
+                >
+              </div>
+              <div id="distributorIdError" class="error-text"></div>
+            </div>
+
+            <!-- 3. Fair Price Shop (FPS) Name -->
+            <div class="form-group grid-col-2">
+              <label for="fpsNameInput" class="form-label">
+                Fair Price Shop (FPS) Name <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="fpsNameInput" 
+                  name="fpsName"
+                  class="form-input" 
+                  placeholder="e.g. Sri Venkateshwara FPS Store No. 42" 
+                  required
+                >
+              </div>
+              <div id="fpsNameError" class="error-text"></div>
+            </div>
+
+            <!-- 4. Mobile Number -->
+            <div class="form-group">
+              <label for="mobileInput" class="form-label">
+                Mobile Number <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <input 
+                  type="tel" 
+                  id="mobileInput" 
+                  name="mobileNumber"
+                  class="form-input" 
+                  placeholder="10-digit mobile number" 
+                  maxlength="10"
+                  required
+                >
+              </div>
+              <div id="mobileError" class="error-text"></div>
+            </div>
+
+            <!-- 5. Email Address -->
+            <div class="form-group">
+              <label for="emailInput" class="form-label">
+                Email Address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <input 
+                  type="email" 
+                  id="emailInput" 
+                  name="email"
+                  class="form-input" 
+                  placeholder="e.g. fps.store42@gmail.com" 
+                  required
+                >
+              </div>
+              <div id="emailError" class="error-text"></div>
+            </div>
+
+            <!-- 6. District -->
+            <div class="form-group">
+              <label for="districtInput" class="form-label">
+                District <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="districtInput" 
+                  name="district"
+                  class="form-input" 
+                  placeholder="e.g. Bangalore Urban" 
+                  required
+                >
+              </div>
+              <div id="districtError" class="error-text"></div>
+            </div>
+
+            <!-- 7. Taluk -->
+            <div class="form-group">
+              <label for="talukInput" class="form-label">
+                Taluk <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="talukInput" 
+                  name="taluk"
+                  class="form-input" 
+                  placeholder="e.g. North Taluk" 
+                  required
+                >
+              </div>
+              <div id="talukError" class="error-text"></div>
+            </div>
+
+            <!-- 8. Village -->
+            <div class="form-group grid-col-2">
+              <label for="villageInput" class="form-label">
+                Village / Ward Name <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="villageInput" 
+                  name="village"
+                  class="form-input" 
+                  placeholder="e.g. Malleshwaram West" 
+                  required
+                >
+              </div>
+              <div id="villageError" class="error-text"></div>
+            </div>
+
+            <!-- 9. FPS Address (Textarea) -->
+            <div class="form-group grid-col-2">
+              <label for="addressInput" class="form-label">
+                FPS Store Address <span class="required">*</span>
+              </label>
+              <div class="input-wrapper textarea-wrapper">
+                <svg class="input-icon textarea-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <textarea 
+                  id="addressInput" 
+                  name="address"
+                  class="form-input form-textarea" 
+                  rows="2"
+                  placeholder="Fair Price Shop Shop No, Main Road, Pincode" 
+                  required
+                ></textarea>
+              </div>
+              <div id="addressError" class="error-text"></div>
+            </div>
+
+            <!-- 10. Password -->
+            <div class="form-group">
+              <label for="passwordInput" class="form-label">
+                Password <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input 
+                  type="password" 
+                  id="passwordInput" 
+                  name="password"
+                  class="form-input" 
+                  placeholder="Min. 6 characters" 
+                  required
+                >
+                <button type="button" class="toggle-password" id="togglePasswordBtn" title="Toggle password visibility">
+                  <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+              </div>
+              <div id="passwordError" class="error-text"></div>
+            </div>
+
+            <!-- 11. Confirm Password -->
+            <div class="form-group">
+              <label for="confirmPasswordInput" class="form-label">
+                Confirm Password <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input 
+                  type="password" 
+                  id="confirmPasswordInput" 
+                  name="confirmPassword"
+                  class="form-input" 
+                  placeholder="Re-enter password" 
+                  required
+                >
+                <button type="button" class="toggle-password" id="toggleConfirmPasswordBtn" title="Toggle password visibility">
+                  <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+              </div>
+              <div id="confirmPasswordError" class="error-text"></div>
+            </div>
+
+          </div>
+
+          <!-- Declaration Checkbox -->
+          <div class="form-options">
+            <label class="checkbox-container">
+              <input type="checkbox" id="termsCheck" required>
+              <span class="checkmark"></span>
+              <span class="checkbox-label">I certify that I am an authorized Fair Price Shop licensee and the information provided is accurate.</span>
+            </label>
+            <div id="termsError" class="error-text"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="registerBtn" class="btn-primary">
+            <span class="btn-text">Register</span>
+            <div class="spinner hidden"></div>
+          </button>
+        </form>
+
+        <!-- Bottom Links -->
+        <div class="bottom-links">
+          <span>Already have an account?</span>
+          <a href="login.html" class="register-link">Login</a>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Info Modal Dialog -->
+  <div id="infoModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Registration Status</h3>
+        <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <div id="modalBody" class="modal-body">
+        Registration details...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="confirmModalBtn">Proceed to Login</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="api.js"></script>
+  <script type="module" src="register-distributor.js"></script>
+</body>
+</html>

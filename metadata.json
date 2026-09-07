@@ -1,0 +1,6 @@
+{
+  "name": "Ration Distribution System",
+  "description": "A secure and transparent digital platform for efficient ration distribution, enabling Admins, Distributors, and Users to manage services seamlessly.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

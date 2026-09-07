@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beneficiary Portal - Ration Distribution System</title>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Beneficiary Stylesheet -->
+  <link rel="stylesheet" href="beneficiary-dashboard.css">
+</head>
+<body>
+
+  <div class="admin-app-container">
+    <!-- Backdrop for Mobile Sidebar -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- =========================================================================
+         1. SIDEBAR NAVIGATION
+         ========================================================================= -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">Ration Distribution System</span>
+          <span class="brand-badge">Beneficiary Portal</span>
+        </div>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Navigation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul class="nav-list">
+          <li class="nav-item active" data-target="dashboard">
+            <a href="#dashboard" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item" data-target="allocation">
+            <a href="#allocation" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              <span class="nav-label">My Allocation</span>
+            </a>
+          </li>
+          <li class="nav-item" data-target="history">
+            <a href="#history" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="nav-label">Collection History</span>
+            </a>
+          </li>
+          <li class="nav-item" data-target="notifications">
+            <a href="#notifications" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="nav-label">Notifications</span>
+              <span class="nav-badge" id="navNotifCount">2</span>
+            </a>
+          </li>
+          <li class="nav-item" data-target="profile">
+            <a href="#profile" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span class="nav-label">My Profile</span>
+            </a>
+          </li>
+          <li class="nav-item" data-target="settings">
+            <a href="#settings" class="nav-link">
+              <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="nav-label">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-mini-card">
+          <div class="user-avatar" id="sidebarAvatar">--</div>
+          <div class="user-details">
+            <span class="user-name" id="sidebarUserName">Loading...</span>
+            <span class="user-role" id="sidebarUserCard">Loading...</span>
+          </div>
+        </div>
+        <button class="logout-btn" id="sidebarLogoutBtn" title="Logout">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- =========================================================================
+         2. MAIN WRAPPER & TOP NAVBAR
+         ========================================================================= -->
+    <div class="main-wrapper">
+      <header class="top-navbar">
+        <div class="navbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn" title="Open Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div>
+            <h1 class="page-title" id="pageTitle">Dashboard Overview</h1>
+            <p class="page-subtitle" id="pageSubtitle">Official PDS Beneficiary Portal</p>
+          </div>
+        </div>
+
+        <div class="navbar-right">
+          <!-- Card Info Pill -->
+          <div class="fps-info-pill">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span id="topCardNumber">Loading Card Info...</span>
+          </div>
+
+          <!-- Date Display -->
+          <div class="date-display">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="currentDateStr">--</span>
+          </div>
+
+          <!-- Notifications Dropdown -->
+          <div class="top-notif-wrapper">
+            <button class="notif-btn" id="notifToggleBtn" title="Notifications">
+              <span style="font-size: 1.1rem; margin-right: 2px;">🔔</span>
+              <span class="notif-badge-count" id="benNotifBellCount">0</span>
+            </button>
+            <div class="notif-dropdown hidden" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <h4>Notifications</h4>
+                <span class="badge badge-primary" id="notifDropdownBadge">0 Unread</span>
+              </div>
+              <div class="notif-list" id="notifDropdownList">
+                <!-- Dynamically populated via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Dropdown -->
+          <div class="profile-dropdown-wrapper">
+            <button class="profile-btn" id="profileToggleBtn">
+              <div class="profile-avatar" id="topAvatar">--</div>
+              <div class="profile-meta">
+                <span class="profile-name" id="topUserName">Loading...</span>
+                <span class="profile-role">Beneficiary</span>
+              </div>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+
+            <div class="profile-menu hidden" id="profileMenu">
+              <div class="profile-menu-header">
+                <div class="user-fullname" id="menuUserName">Loading...</div>
+                <div class="user-email" id="menuUserCard">Ration Card: Loading...</div>
+              </div>
+              <hr class="menu-divider">
+              <button class="menu-item" id="menuProfileBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Profile
+              </button>
+              <button class="menu-item" id="menuSettingsBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Account Settings
+              </button>
+              <hr class="menu-divider">
+              <button class="menu-item text-danger" id="menuLogoutBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- =========================================================================
+           3. MAIN CONTENT AREA
+           ========================================================================= -->
+      <main class="main-content">
+
+        <!-- Beneficiary Portal Error Alert Banner (Hidden by default) -->
+        <div class="beneficiary-error-banner hidden" id="beneficiaryErrorBanner">
+          <div class="error-banner-content">
+            <span class="error-icon">⚠️</span>
+            <div class="error-text">
+              <strong id="errorBannerTitle">Unable to fetch live portal records</strong>
+              <span id="errorBannerMessage">Displaying offline cached session. Please check your network connection or try again.</span>
+            </div>
+          </div>
+          <button type="button" class="btn-outline-danger" id="retryLoadingBtn">Retry Loading</button>
+        </div>
+
+        <!-- SECTION 1: DASHBOARD OVERVIEW -->
+        <section id="dashboardSection" class="content-section">
+          <!-- Welcome Banner -->
+          <div class="fps-welcome-banner">
+            <div class="fps-welcome-text">
+              <h2>Welcome, <span id="welcomeUserName">Loading...</span></h2>
+              <p>Ration Card: <strong id="welcomeCardNum">Loading...</strong> • Assigned Shop: <strong id="welcomeFpsShop">Loading...</strong></p>
+            </div>
+            <div class="pos-machine-status">
+              <span class="status-dot active"></span>
+              <span>Smart e-POS Machine Online</span>
+            </div>
+          </div>
+
+          <!-- Main Dashboard Cards Grid -->
+          <div class="dashboard-cards-grid">
+            <!-- Card 1: Current Month Allocation -->
+            <div class="card">
+              <div class="card-header flex-header">
+                <div>
+                  <h3 class="card-title">Current Month Allocation</h3>
+                  <p class="card-subtitle" id="dashAllocSubtitle">Official quota sanctioned for current cycle</p>
+                </div>
+                <span class="badge badge-primary" id="dashAllocBadge">Current Month</span>
+              </div>
+
+              <div class="allocation-items-grid">
+                <!-- Rice -->
+                <div class="allocation-item-box">
+                  <div class="commodity-icon-wrap">🍚</div>
+                  <div class="commodity-details">
+                    <span class="commodity-label">Rice</span>
+                    <div>
+                      <span class="commodity-value" id="dashRiceVal">--</span>
+                      <span class="commodity-unit">Kg</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Oil -->
+                <div class="allocation-item-box">
+                  <div class="commodity-icon-wrap">🛢️</div>
+                  <div class="commodity-details">
+                    <span class="commodity-label">Oil</span>
+                    <div>
+                      <span class="commodity-value" id="dashOilVal">--</span>
+                      <span class="commodity-unit">Ltr</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Collection Status -->
+            <div class="card">
+              <div class="card-header flex-header">
+                <div>
+                  <h3 class="card-title" id="dashStatusTitle">Monthly Collection Status</h3>
+                  <p class="card-subtitle">Transaction status for current cycle</p>
+                </div>
+                <span class="badge badge-success" id="dashStatusBadge">Pending</span>
+              </div>
+
+              <div class="status-banner status-pending" id="dashStatusBanner">
+                <div class="status-badge-title" id="dashStatusBadgeTitle">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span id="dashStatusBannerText">Quota Allocation Available</span>
+                </div>
+                <span style="font-weight: 700; font-size: 0.85rem;" id="dashStatusMonth">Current Month</span>
+              </div>
+
+              <div class="status-detail-list">
+                <div class="status-detail-item">
+                  <span class="status-detail-label">Collection Date & Time</span>
+                  <span class="status-detail-val" id="dashCollectDateTime">Pending Collection</span>
+                </div>
+                <div class="status-detail-item">
+                  <span class="status-detail-label">Fair Price Shop</span>
+                  <span class="status-detail-val" id="dashCollectShop">Loading...</span>
+                </div>
+                <div class="status-detail-item">
+                  <span class="status-detail-label">e-POS Device Token</span>
+                  <span class="status-detail-val" id="dashCollectDevice">EPOS-ONLINE-01</span>
+                </div>
+                <div class="status-detail-item">
+                  <span class="status-detail-label">Biometric Verification</span>
+                  <span class="status-detail-val" id="dashCollectBiometric" style="color: var(--color-success-text); font-weight: 800;">Aadhaar Biometric Matched</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fair Price Shop Information Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Assigned Fair Price Shop Details</h3>
+              <p class="card-subtitle">Your registered ration distribution centre</p>
+            </div>
+            <div class="status-detail-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+              <div class="status-detail-item">
+                <span class="status-detail-label">Shop Name & ID</span>
+                <span class="status-detail-val" id="dashFpsShopName">Loading...</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Licensee Name</span>
+                <span class="status-detail-val" id="dashFpsLicensee">Loading...</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Location Address</span>
+                <span class="status-detail-val" id="dashFpsAddress">Loading...</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Operating Contact</span>
+                <span class="status-detail-val" id="dashFpsContact">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: MY MONTHLY ALLOCATION -->
+        <section id="allocationSection" class="content-section hidden">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">My Monthly Allocation</h3>
+                <p class="card-subtitle" id="allocSectionSubtitle">Official Government Monthly Ration Entitlement</p>
+              </div>
+              <span class="badge badge-primary" id="allocSectionBadge">Current Month</span>
+            </div>
+
+            <!-- Primary Allocation Card displaying ONLY requested commodities -->
+            <div class="allocation-items-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <!-- Rice -->
+              <div class="allocation-item-box" style="padding: 20px;">
+                <div class="commodity-icon-wrap" style="width: 52px; height: 52px; font-size: 1.8rem;">🍚</div>
+                <div class="commodity-details">
+                  <span class="commodity-label" style="font-size: 0.85rem;">Rice Quantity</span>
+                  <div>
+                    <span class="commodity-value" id="allocRiceVal" style="font-size: 1.8rem;">--</span>
+                    <span class="commodity-unit" style="font-size: 1rem;">Kg</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Oil -->
+              <div class="allocation-item-box" style="padding: 20px;">
+                <div class="commodity-icon-wrap" style="width: 52px; height: 52px; font-size: 1.8rem;">🛢️</div>
+                <div class="commodity-details">
+                  <span class="commodity-label" style="font-size: 0.85rem;">Oil Quantity</span>
+                  <div>
+                    <span class="commodity-value" id="allocOilVal" style="font-size: 1.8rem;">--</span>
+                    <span class="commodity-unit" style="font-size: 1rem;">Ltr</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Government Scheme Rule Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Government Entitlement Policy</h3>
+              <p class="card-subtitle" id="allocPolicySubtitle">Priority Household (PHH) Allocation Norms</p>
+            </div>
+            <div class="status-detail-list">
+              <div class="status-detail-item">
+                <span class="status-detail-label">Beneficiary Category</span>
+                <span class="status-detail-val" id="allocPolicyCategory">Priority Household (PHH)</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Total Registered Household Members</span>
+                <span class="status-detail-val" id="allocPolicyMembers">-- Active Members</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Foodgrains Entitlement Rate</span>
+                <span class="status-detail-val" id="allocPolicyRate">5 Kg Foodgrains per member</span>
+              </div>
+              <div class="status-detail-item">
+                <span class="status-detail-label">Essential Commodity Rates</span>
+                <span class="status-detail-val" id="allocPolicyCommodityRates">Rice @ ₹0/Kg | Edible Oil @ ₹25/Ltr</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: COLLECTION HISTORY -->
+        <section id="historySection" class="content-section hidden">
+          <div class="card">
+            <div class="card-header flex-header">
+              <div>
+                <h3 class="card-title">Collection History</h3>
+                <p class="card-subtitle">Past monthly ration distribution transactions ledger</p>
+              </div>
+            </div>
+
+            <!-- Toolbar Search -->
+            <div class="table-toolbar">
+              <div class="search-box">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="historySearchInput" placeholder="Search history by month or status...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Month / Reference</th>
+                    <th>Rice</th>
+                    <th>Oil</th>
+                    <th>Collection Date</th>
+                    <th>Collection Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: NOTIFICATIONS -->
+        <section id="notificationsSection" class="content-section hidden">
+          <div class="card">
+            <div class="card-header flex-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+              <div>
+                <h3 class="card-title">Official Notifications & Circulars</h3>
+                <p class="card-subtitle">Real-time alerts broadcasted by Government PDS & FPS Distributor</p>
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-outline btn-sm" id="benNotifMarkAllReadBtn">Mark All as Read</button>
+                <button class="btn btn-outline btn-sm text-danger" id="benNotifClearReadBtn">Clear Read Notifications</button>
+              </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div style="display: flex; gap: 8px; margin: 16px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;" id="benNotifFilterGroup">
+              <button class="notif-filter-btn active" data-filter="all">All</button>
+              <button class="notif-filter-btn" data-filter="unread">Unread</button>
+              <button class="notif-filter-btn" data-filter="read">Read</button>
+            </div>
+
+            <div class="notifications-feed-list" id="benNotifList">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: PROFILE -->
+        <section id="profileSection" class="content-section hidden">
+          <div class="profile-grid">
+            <!-- Left Profile Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Head of Family Details</h3>
+                <p class="card-subtitle">Primary cardholder information</p>
+              </div>
+
+              <div class="info-card-list">
+                <div class="info-card-item">
+                  <div class="info-card-label">Head of Household</div>
+                  <div class="info-card-val" id="profileHeadName">Loading...</div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-label">Ration Card Number</div>
+                  <div class="info-card-val" id="profileCardNum">Loading...</div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-label">Card Category</div>
+                  <div class="info-card-val" id="profileCategory">Priority Household (PHH)</div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-label">Mobile Number</div>
+                  <div class="info-card-val" id="profileMobile">Loading...</div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-label">Aadhaar / RFID Reference</div>
+                  <div class="info-card-val" id="profileAadhaar">Linked & Verified</div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-label">Residential Address</div>
+                  <div class="info-card-val" id="profileAddress">Loading...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Family Members Table -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title" id="familyCardTitle">Registered Family Members</h3>
+                <p class="card-subtitle" id="familyCardSubtitle">Aadhaar verified household members</p>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Member Name</th>
+                      <th>Relation</th>
+                      <th>Gender</th>
+                      <th>Age</th>
+                      <th>e-KYC Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="familyMembersTableBody">
+                    <!-- Dynamically populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: SETTINGS -->
+        <section id="settingsSection" class="content-section hidden">
+          <div class="card" style="max-width: 600px;">
+            <div class="card-header">
+              <h3 class="card-title">Account Security</h3>
+              <p class="card-subtitle">Update password & account login preferences</p>
+            </div>
+
+            <form id="changePasswordForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="currentPassInput">Current Password</label>
+                  <input type="password" id="currentPassInput" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="newPassInput">New Password</label>
+                  <input type="password" id="newPassInput" class="form-input" placeholder="Enter new strong password (min 6 chars)" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="confirmPassInput">Confirm New Password</label>
+                  <input type="password" id="confirmPassInput" class="form-input" placeholder="Re-enter new password" required>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 10px;">
+                  <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Update Password
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Notification Details Modal -->
+  <div class="modal-backdrop hidden" id="notificationDetailModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="notifDetailModalTitle">Notification Details</h3>
+        <button class="modal-close-btn" id="closeNotifDetailModalBtn">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span class="badge badge-primary" id="notifDetailCategory">Ration Notice</span>
+          <span style="font-size: 0.78rem; color: var(--color-text-muted);" id="notifDetailTime">Today</span>
+        </div>
+        <h4 id="notifDetailHeading" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; color: var(--color-primary);"></h4>
+        <p id="notifDetailBody" style="font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5; margin-bottom: 16px;"></p>
+        <div style="font-size: 0.8rem; color: var(--color-text-muted); border-top: 1px solid var(--color-border); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span>Issuer: <strong id="notifDetailIssuer">Karnataka Food & Civil Supplies</strong></span>
+          <span id="notifDetailStatusTag" class="badge">Read</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="confirmNotifDetailModalBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beneficiary Portal Loading Screen Overlay -->
+  <div class="beneficiary-loading-screen" id="beneficiaryLoadingScreen">
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div class="loading-title">Loading Beneficiary Portal</div>
+      <div class="loading-subtitle">Verifying secure session and fetching ration records...</div>
+    </div>
+  </div>
+
+  <!-- JavaScript Entry Point -->
+  <script type="module" src="api.js"></script>
+  <script type="module" src="beneficiary-dashboard.js"></script>
+</body>
+</html>

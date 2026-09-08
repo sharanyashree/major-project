@@ -73,7 +73,7 @@ const checkRfid = async (req, res) => {
     }
 
     // 2. Check beneficiary account status
-    if (beneficiary.status !== 'Active') {
+    if (beneficiary.status !== 'Active' && beneficiary.status !== 'Approved') {
       return res.status(403).json({
         success: false,
         message: `Beneficiary account is currently ${beneficiary.status}. Ration collection is disallowed.`,
@@ -89,29 +89,29 @@ const checkRfid = async (req, res) => {
       year,
     });
 
-    const riceQuota = beneficiary.riceQuota != null ? beneficiary.riceQuota : 0;
-    const oilQuota = beneficiary.oilQuota != null ? beneficiary.oilQuota : 0;
-
     if (!allocation) {
+      const benRice = beneficiary.riceQuota != null ? beneficiary.riceQuota : 0;
+      const benOil = beneficiary.oilQuota != null ? beneficiary.oilQuota : 0;
       return res.status(200).json({
         success: true,
-        message: `Beneficiary found, but no allocation issued for ${month} ${year}`,
+        message: `Beneficiary identified, but no allocation issued for ${month} ${year}`,
         data: {
           beneficiary: {
             _id: beneficiary._id,
             fullName: beneficiary.fullName,
             rationCardNumber: beneficiary.rationCardNumber,
-            riceQuota: riceQuota,
-            oilQuota: oilQuota,
+            riceQuota: benRice,
+            oilQuota: benOil,
             mobileNumber: beneficiary.mobileNumber,
             assignedDistributor: beneficiary.assignedDistributor,
             status: beneficiary.status,
             rfidUid: beneficiary.rfidUid,
           },
-          riceAllocated: riceQuota,
-          oilAllocated: oilQuota,
-          availableRice: riceQuota,
-          availableOil: oilQuota,
+          riceAllocated: 0,
+          oilAllocated: 0,
+          availableRice: 0,
+          availableOil: 0,
+          hasAllocatedQuota: false,
           collectionStatus: 'No Allocation',
         },
       });
@@ -138,8 +138,8 @@ const checkRfid = async (req, res) => {
           _id: beneficiary._id,
           fullName: beneficiary.fullName,
           rationCardNumber: beneficiary.rationCardNumber,
-          riceQuota: riceQuota,
-          oilQuota: oilQuota,
+          riceQuota: allocation.riceAllocated,
+          oilQuota: allocation.oilAllocated,
           mobileNumber: beneficiary.mobileNumber,
           assignedDistributor: beneficiary.assignedDistributor,
           status: beneficiary.status,
@@ -153,6 +153,7 @@ const checkRfid = async (req, res) => {
         },
         availableRice,
         availableOil,
+        hasAllocatedQuota: availableRice > 0 || availableOil > 0,
         collectionStatus,
       },
     });
@@ -191,6 +192,27 @@ const generateOtp = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Beneficiary not found. Please provide valid beneficiaryId or rfidUid',
+      });
+    }
+
+    // Check beneficiary status
+    if (beneficiary.status !== 'Active' && beneficiary.status !== 'Approved') {
+      return res.status(403).json({
+        success: false,
+        message: `Beneficiary account is currently ${beneficiary.status}. OTP generation disallowed.`,
+      });
+    }
+
+    // Check if beneficiary has zero unallocated quota
+    const { month, year } = getCurrentMonthAndYear();
+    const allocation = await Allocation.findOne({ beneficiary: beneficiary._id, month, year });
+    const hasAllocQuota = allocation && (allocation.riceAllocated > 0 || allocation.oilAllocated > 0);
+    const hasDocQuota = (beneficiary.riceQuota > 0 || beneficiary.oilQuota > 0);
+
+    if (!hasAllocQuota && !hasDocQuota) {
+      return res.status(400).json({
+        success: false,
+        message: 'No ration quota allocated for this beneficiary. OTP generation disallowed.',
       });
     }
 
@@ -366,8 +388,8 @@ const checkAllocation = async (req, res) => {
 
     const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(targetBeneficiaryId, month, year);
 
-    const riceRemaining = Math.max(0, allocation.riceAllocated - riceDispensed);
-    const oilRemaining = Math.max(0, allocation.oilAllocated - oilDispensed);
+    const riceRemaining = Math.max(0, Math.round((allocation.riceAllocated - riceDispensed) * 1000) / 1000);
+    const oilRemaining = Math.max(0, Math.round((allocation.oilAllocated - oilDispensed) * 1000) / 1000);
 
     let collectionStatus = allocation.collectionStatus;
     if (riceRemaining <= 0 && oilRemaining <= 0) {
@@ -407,31 +429,28 @@ const checkAllocation = async (req, res) => {
  */
 const validateDispense = async (req, res) => {
   try {
-    const rawId = req.body.beneficiaryId || req.body.id;
+    const rawId = req.body.beneficiaryId || req.body.id || req.body.userId;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag || req.body.rfid;
     const rawRice = req.body.riceQuantity !== undefined ? req.body.riceQuantity : (req.body.rice !== undefined ? req.body.rice : req.body.requestedRice);
     const rawOil = req.body.oilQuantity !== undefined ? req.body.oilQuantity : (req.body.oil !== undefined ? req.body.oil : req.body.requestedOil);
-    const machineId = req.body.machineId;
+    const machineId = req.body.machineId || 'SRM-CENTER-001';
+    const distributorId = req.body.distributorId;
 
-    const reqRice = Number(rawRice || 0);
-    const reqOil = Number(rawOil || 0);
-
-    if (!rawId) {
+    if (!rawId && !rawRfid) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide beneficiaryId',
+        message: 'Please provide beneficiaryId or rfidUid',
         valid: false,
       });
     }
 
-    if (reqRice < 0 || reqOil < 0 || (reqRice === 0 && reqOil === 0)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide valid positive quantities for rice or oil',
-        valid: false,
-      });
+    let beneficiary = null;
+    if (rawId) {
+      beneficiary = await Beneficiary.findById(rawId);
+    } else if (rawRfid) {
+      beneficiary = await Beneficiary.findOne({ rfidUid: String(rawRfid).trim() });
     }
 
-    const beneficiary = await Beneficiary.findById(rawId);
     if (!beneficiary) {
       return res.status(404).json({
         success: false,
@@ -440,9 +459,58 @@ const validateDispense = async (req, res) => {
       });
     }
 
+    // Verify RFID UID if provided
+    if (rawRfid) {
+      const cleanRfid = String(rawRfid).trim();
+      if (!beneficiary.rfidUid || beneficiary.rfidUid.toUpperCase() !== cleanRfid.toUpperCase()) {
+        return res.status(400).json({
+          success: false,
+          message: 'RFID UID does not match beneficiary record',
+          valid: false,
+        });
+      }
+    }
+
+    // Check beneficiary status
+    if (beneficiary.status !== 'Active' && beneficiary.status !== 'Approved') {
+      return res.status(403).json({
+        success: false,
+        message: `Beneficiary account is currently ${beneficiary.status}. Ration collection is disallowed.`,
+        beneficiaryStatus: beneficiary.status,
+        valid: false,
+      });
+    }
+
+    if (rawRice === undefined && rawOil === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide riceQuantity or oilQuantity',
+        valid: false,
+      });
+    }
+
+    const reqRice = Number(rawRice !== undefined ? rawRice : 0);
+    const reqOil = Number(rawOil !== undefined ? rawOil : 0);
+
+    if (isNaN(reqRice) || isNaN(reqOil) || !isFinite(reqRice) || !isFinite(reqOil)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested quantities must be valid finite numbers',
+        valid: false,
+      });
+    }
+
+    if (reqRice < 0 || reqOil < 0 || (reqRice === 0 && reqOil === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide valid positive quantities for rice or oil (must be greater than 0)',
+        valid: false,
+      });
+    }
+
     const { month, year } = getCurrentMonthAndYear();
     const allocation = await Allocation.findOne({
-      beneficiary: rawId,
+      beneficiary: beneficiary._id,
       month,
       year,
     });
@@ -450,15 +518,15 @@ const validateDispense = async (req, res) => {
     if (!allocation) {
       return res.status(400).json({
         success: false,
-        message: `No active allocation found for ${month} ${year}`,
+        message: `No active ration allocation found for ${month} ${year}. Beneficiary has 0 unallocated quota.`,
         valid: false,
       });
     }
 
-    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(rawId, month, year);
+    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(beneficiary._id, month, year);
 
-    const riceRemaining = Math.max(0, allocation.riceAllocated - riceDispensed);
-    const oilRemaining = Math.max(0, allocation.oilAllocated - oilDispensed);
+    const riceRemaining = Math.max(0, Math.round((allocation.riceAllocated - riceDispensed) * 1000) / 1000);
+    const oilRemaining = Math.max(0, Math.round((allocation.oilAllocated - oilDispensed) * 1000) / 1000);
 
     if (reqRice > allocation.riceAllocated || reqRice > riceRemaining) {
       return res.status(400).json({
@@ -480,15 +548,41 @@ const validateDispense = async (req, res) => {
       });
     }
 
+    // Check machine/distributor inventory if distributor is specified or assigned
+    const activeDistributorId = distributorId || beneficiary.assignedDistributor;
+    if (activeDistributorId) {
+      const inventory = await Inventory.findOne({
+        $or: [{ distributor: activeDistributorId }, { distributorId: activeDistributorId }],
+      });
+      if (inventory) {
+        if (reqRice > inventory.riceStock) {
+          return res.status(400).json({
+            success: false,
+            message: `Requested rice quantity (${reqRice} kg) exceeds available distributor stock (${inventory.riceStock} kg)`,
+            valid: false,
+          });
+        }
+        if (reqOil > inventory.oilStock) {
+          return res.status(400).json({
+            success: false,
+            message: `Requested oil quantity (${reqOil} L) exceeds available distributor stock (${inventory.oilStock} L)`,
+            valid: false,
+          });
+        }
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Dispense validation successful. Machine authorized to dispense.',
       valid: true,
       data: {
-        beneficiaryId: rawId,
+        beneficiaryId: beneficiary._id,
         riceQuantity: reqRice,
         oilQuantity: reqOil,
-        machineId: machineId || 'SRM-CENTER-001',
+        riceRemaining,
+        oilRemaining,
+        machineId,
       },
     });
   } catch (error) {
@@ -512,27 +606,84 @@ const validateDispense = async (req, res) => {
  */
 const completeDispense = async (req, res) => {
   try {
-    const rawId = req.body.beneficiaryId || req.body.id;
+    const rawId = req.body.beneficiaryId || req.body.id || req.body.userId;
+    const rawRfid = req.body.rfidUid || req.body.rfidTag || req.body.rfid;
     const rawRice = req.body.riceQuantity !== undefined ? req.body.riceQuantity : (req.body.rice !== undefined ? req.body.rice : req.body.dispensedRice);
     const rawOil = req.body.oilQuantity !== undefined ? req.body.oilQuantity : (req.body.oil !== undefined ? req.body.oil : req.body.dispensedOil);
-    const machineId = req.body.machineId;
+    const machineId = req.body.machineId || 'SRM-CENTER-001';
     const distributorId = req.body.distributorId;
+    const requestId = req.body.requestId || req.headers['x-request-id'] || req.headers['idempotency-key'] || req.body.idempotencyKey;
 
-    const reqRice = Number(rawRice || 0);
-    const reqOil = Number(rawOil || 0);
-
-    if (!rawId) {
+    if (!rawId && !rawRfid) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide beneficiaryId',
+        message: 'Please provide beneficiaryId or rfidUid',
       });
     }
 
-    const beneficiary = await Beneficiary.findById(rawId);
+    // Check duplicate request ID / idempotency
+    if (requestId) {
+      const existingTx = await Transaction.findOne({ requestId: String(requestId).trim() });
+      if (existingTx) {
+        return res.status(200).json({
+          success: true,
+          duplicateHandled: true,
+          message: 'Transaction already completed (idempotent request)',
+          data: {
+            transaction: existingTx,
+          },
+        });
+      }
+    }
+
+    let beneficiary = null;
+    if (rawId) {
+      beneficiary = await Beneficiary.findById(rawId);
+    } else if (rawRfid) {
+      beneficiary = await Beneficiary.findOne({ rfidUid: String(rawRfid).trim() });
+    }
+
     if (!beneficiary) {
       return res.status(404).json({
         success: false,
         message: 'Beneficiary not found',
+      });
+    }
+
+    // Verify RFID UID if provided
+    if (rawRfid) {
+      const cleanRfid = String(rawRfid).trim();
+      if (!beneficiary.rfidUid || beneficiary.rfidUid.toUpperCase() !== cleanRfid.toUpperCase()) {
+        return res.status(400).json({
+          success: false,
+          message: 'RFID UID does not match beneficiary record',
+        });
+      }
+    }
+
+    // Check beneficiary status
+    if (beneficiary.status !== 'Active' && beneficiary.status !== 'Approved') {
+      return res.status(403).json({
+        success: false,
+        message: `Beneficiary account is currently ${beneficiary.status}. Ration collection is disallowed.`,
+        beneficiaryStatus: beneficiary.status,
+      });
+    }
+
+    const reqRice = Number(rawRice !== undefined ? rawRice : 0);
+    const reqOil = Number(rawOil !== undefined ? rawOil : 0);
+
+    if (isNaN(reqRice) || isNaN(reqOil) || !isFinite(reqRice) || !isFinite(reqOil)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested quantities must be valid finite numbers',
+      });
+    }
+
+    if (reqRice < 0 || reqOil < 0 || (reqRice === 0 && reqOil === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide valid positive quantities for rice or oil (greater than 0)',
       });
     }
 
@@ -547,6 +698,83 @@ const completeDispense = async (req, res) => {
 
     const { month, year } = getCurrentMonthAndYear();
 
+    // Check monthly allocation and remaining quota
+    const allocation = await Allocation.findOne({
+      beneficiary: beneficiary._id,
+      month,
+      year,
+    });
+
+    if (!allocation) {
+      return res.status(400).json({
+        success: false,
+        message: `No active ration allocation found for ${month} ${year}. Beneficiary has 0 unallocated quota.`,
+      });
+    }
+
+    const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(beneficiary._id, month, year);
+
+    const riceRemaining = Math.max(0, Math.round((allocation.riceAllocated - riceDispensed) * 1000) / 1000);
+    const oilRemaining = Math.max(0, Math.round((allocation.oilAllocated - oilDispensed) * 1000) / 1000);
+
+    // Duplicate replay check: if quota has already been consumed and an identical transaction was made within 10 seconds
+    const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+    const recentDuplicate = await Transaction.findOne({
+      beneficiary: beneficiary._id,
+      machineId,
+      riceDispensed: reqRice,
+      oilDispensed: reqOil,
+      status: 'Successful',
+      createdAt: { $gte: tenSecondsAgo },
+    });
+    if (recentDuplicate && (reqRice > riceRemaining || reqOil > oilRemaining)) {
+      return res.status(200).json({
+        success: true,
+        message: 'Transaction already completed (duplicate request filtered)',
+        data: {
+          transaction: recentDuplicate,
+        },
+      });
+    }
+
+    if (reqRice > allocation.riceAllocated || reqRice > riceRemaining) {
+      return res.status(400).json({
+        success: false,
+        message: `Requested rice quantity (${reqRice} kg) exceeds available monthly quota (${riceRemaining} kg remaining of ${allocation.riceAllocated} kg allocated)`,
+        riceAllocated: allocation.riceAllocated,
+        riceRemaining,
+      });
+    }
+
+    if (reqOil > allocation.oilAllocated || reqOil > oilRemaining) {
+      return res.status(400).json({
+        success: false,
+        message: `Requested oil quantity (${reqOil} L) exceeds available monthly quota (${oilRemaining} L remaining of ${allocation.oilAllocated} L allocated)`,
+        oilAllocated: allocation.oilAllocated,
+        oilRemaining,
+      });
+    }
+
+    // Check distributor inventory
+    let inventory = await Inventory.findOne({
+      $or: [{ distributor: activeDistributorId }, { distributorId: activeDistributorId }],
+    });
+
+    if (inventory) {
+      if (reqRice > inventory.riceStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Requested rice quantity (${reqRice} kg) exceeds available distributor stock (${inventory.riceStock} kg)`,
+        });
+      }
+      if (reqOil > inventory.oilStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Requested oil quantity (${reqOil} L) exceeds available distributor stock (${inventory.oilStock} L)`,
+        });
+      }
+    }
+
     // 1. Create Transaction record
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -557,33 +785,26 @@ const completeDispense = async (req, res) => {
       riceDispensed: reqRice,
       oilDispensed: reqOil,
       rfidUid: beneficiary.rfidUid,
-      machineId: machineId || 'SRM-CENTER-001',
+      machineId,
       otpVerified: true,
       date: now,
       time: timeStr,
       status: 'Successful',
+      ...(requestId ? { requestId: String(requestId).trim() } : {}),
     });
 
     // 2. Update Allocation Status
-    let allocation = await Allocation.findOne({
-      beneficiary: beneficiary._id,
-      month,
-      year,
-    });
+    const totalRiceDispensed = Math.round((riceDispensed + reqRice) * 1000) / 1000;
+    const totalOilDispensed = Math.round((oilDispensed + reqOil) * 1000) / 1000;
 
-    if (allocation) {
-      const { riceDispensed, oilDispensed } = await getBeneficiaryMonthlyDispensed(beneficiary._id, month, year);
-
-      if (riceDispensed >= allocation.riceAllocated && oilDispensed >= allocation.oilAllocated) {
-        allocation.collectionStatus = 'Collected';
-      } else {
-        allocation.collectionStatus = 'Partially Collected';
-      }
-      await allocation.save();
+    if (totalRiceDispensed >= allocation.riceAllocated && totalOilDispensed >= allocation.oilAllocated) {
+      allocation.collectionStatus = 'Collected';
+    } else {
+      allocation.collectionStatus = 'Partially Collected';
     }
+    await allocation.save();
 
     // 3. Reduce Distributor Inventory
-    let inventory = await Inventory.findOne({ distributor: activeDistributorId });
     if (inventory) {
       inventory.riceStock = Math.max(0, Math.round((inventory.riceStock - reqRice) * 1000) / 1000);
       inventory.oilStock = Math.max(0, Math.round((inventory.oilStock - reqOil) * 1000) / 1000);
@@ -596,14 +817,14 @@ const completeDispense = async (req, res) => {
       receiverId: beneficiary._id,
       receiverRole: 'Beneficiary',
       title: 'Ration Collected',
-      message: `Ration successfully collected: ${reqRice} kg Rice and ${reqOil} L Oil dispensed from Machine ${machineId || 'SRM-CENTER-001'}.`,
+      message: `Ration successfully collected: ${reqRice} kg Rice and ${reqOil} L Oil dispensed from Machine ${machineId}.`,
     });
 
     await Notification.create({
       receiverId: activeDistributorId,
       receiverRole: 'Distributor',
       title: 'Ration Dispensed',
-      message: `${reqRice} kg Rice & ${reqOil} L Oil dispensed at Machine ${machineId || 'SRM-CENTER-001'} for beneficiary ${beneficiary.fullName}.`,
+      message: `${reqRice} kg Rice & ${reqOil} L Oil dispensed at Machine ${machineId} for beneficiary ${beneficiary.fullName}.`,
     });
 
     return res.status(200).json({
@@ -612,6 +833,10 @@ const completeDispense = async (req, res) => {
       data: {
         transaction,
         updatedAllocationStatus: allocation ? allocation.collectionStatus : null,
+        remainingBeneficiaryQuota: {
+          riceRemaining: Math.max(0, Math.round((allocation.riceAllocated - totalRiceDispensed) * 1000) / 1000),
+          oilRemaining: Math.max(0, Math.round((allocation.oilAllocated - totalOilDispensed) * 1000) / 1000),
+        },
         remainingDistributorInventory: inventory
           ? { riceStock: inventory.riceStock, oilStock: inventory.oilStock }
           : null,

@@ -61,6 +61,18 @@ void updateLcd(const String& line1, const String& line2) {
   lcd.print(line2.substring(0, LCD_COLUMNS));
 }
 
+void formatQuotaString(char* buffer, size_t bufSize, const char* label, float value, const char* unit) {
+  float intPart;
+  float fracPart = modff(value, &intPart);
+  if (fabsf(fracPart) < 0.001f) {
+    snprintf(buffer, bufSize, "%s: %d %s", label, (int)intPart, unit);
+  } else if (fabsf(modff(value * 10.0f, &intPart)) < 0.001f) {
+    snprintf(buffer, bufSize, "%s: %.1f %s", label, value, unit);
+  } else {
+    snprintf(buffer, bufSize, "%s: %.2f %s", label, value, unit);
+  }
+}
+
 void buzzerBeep(uint16_t durationMs) {
   digitalWrite(PIN_BUZZER, HIGH);
   delay(durationMs);
@@ -158,22 +170,33 @@ bool apiAuthenticateRfid(const String& uid,
       JsonObject beneficiary = resDoc["data"]["beneficiary"];
       String status = beneficiary["status"].as<String>();
 
-      if (status.equalsIgnoreCase("Active")) {
+      if (status.equalsIgnoreCase("Active") || status.equalsIgnoreCase("Approved")) {
         outBeneficiaryId    = beneficiary["_id"].as<String>();
         outFullName         = beneficiary["fullName"].as<String>();
         outRationCardNumber = beneficiary["rationCardNumber"].as<String>();
-        outRiceQuota        = beneficiary["riceQuota"].as<float>();
-        outOilQuota         = beneficiary["oilQuota"].as<float>();
+
+        // Prefer available quota if calculated by backend, otherwise beneficiary quota
+        if (resDoc["data"].containsKey("availableRice")) {
+          outRiceQuota = resDoc["data"]["availableRice"].as<float>();
+        } else {
+          outRiceQuota = beneficiary["riceQuota"].as<float>();
+        }
+
+        if (resDoc["data"].containsKey("availableOil")) {
+          outOilQuota = resDoc["data"]["availableOil"].as<float>();
+        } else {
+          outOilQuota = beneficiary["oilQuota"].as<float>();
+        }
 
         Serial.println("[API] Beneficiary Authenticated Successfully:");
         Serial.println("  ID:         " + outBeneficiaryId);
         Serial.println("  Name:       " + outFullName);
         Serial.println("  RationCard: " + outRationCardNumber);
-        Serial.printf("  Rice Quota: %.1f KG\n", outRiceQuota);
-        Serial.printf("  Oil Quota:  %.1f L\n", outOilQuota);
+        Serial.printf("  Rice Quota: %.2f KG\n", outRiceQuota);
+        Serial.printf("  Oil Quota:  %.2f L\n", outOilQuota);
         success = true;
       } else {
-        Serial.printf("[API] Beneficiary status is '%s', not Active. Access denied.\n", status.c_str());
+        Serial.printf("[API] Beneficiary status is '%s', not Active/Approved. Access denied.\n", status.c_str());
         updateLcd("Status: " + status, "Access Denied");
         buzzerBeep(400);
         delay(2500);
@@ -243,6 +266,89 @@ bool apiGenerateOtp(const String& beneficiaryId) {
     }
   } else {
     Serial.printf("[API] OTP Generation Failed (HTTP %d)\n", httpCode);
+  }
+
+  http.end();
+  return success;
+}
+
+/**
+ * 3. POST /api/machine/dispense
+ * Validates requested dispense quantities against beneficiary quota and distributor stock.
+ */
+bool apiValidateDispense(const String& beneficiaryId, float riceQty, float oilQty) {
+  if (WiFi.status() != WL_CONNECTED || beneficiaryId.length() == 0) return false;
+
+  HTTPClient http;
+  http.begin(String(BACKEND_BASE_URL) + "/api/machine/dispense");
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(HTTP_TIMEOUT_MS);
+
+  StaticJsonDocument<256> reqDoc;
+  reqDoc["beneficiaryId"] = beneficiaryId;
+  reqDoc["riceQuantity"] = riceQty;
+  reqDoc["oilQuantity"] = oilQty;
+  reqDoc["machineId"] = MACHINE_ID;
+
+  String reqBody;
+  serializeJson(reqDoc, reqBody);
+
+  int httpCode = http.POST(reqBody);
+  bool valid = false;
+
+  if (httpCode == HTTP_CODE_OK) {
+    String resBody = http.getString();
+    StaticJsonDocument<512> resDoc;
+    DeserializationError err = deserializeJson(resDoc, resBody);
+    if (!err && resDoc["valid"].as<bool>()) {
+      valid = true;
+      Serial.println("[API] Dispense validation approved.");
+    }
+  } else {
+    Serial.printf("[API] Dispense Validation Rejected (HTTP %d)\n", httpCode);
+  }
+
+  http.end();
+  return valid;
+}
+
+/**
+ * 4. POST /api/machine/complete
+ * Records dispense completion, deducts inventory, and updates allocation status.
+ */
+bool apiCompleteDispense(const String& beneficiaryId, float riceQty, float oilQty, const String& requestId = "") {
+  if (WiFi.status() != WL_CONNECTED || beneficiaryId.length() == 0) return false;
+
+  HTTPClient http;
+  http.begin(String(BACKEND_BASE_URL) + "/api/machine/complete");
+  http.addHeader("Content-Type", "application/json");
+  http.setTimeout(HTTP_TIMEOUT_MS);
+
+  StaticJsonDocument<256> reqDoc;
+  reqDoc["beneficiaryId"] = beneficiaryId;
+  reqDoc["riceQuantity"] = riceQty;
+  reqDoc["oilQuantity"] = oilQty;
+  reqDoc["machineId"] = MACHINE_ID;
+  if (requestId.length() > 0) {
+    reqDoc["requestId"] = requestId;
+  }
+
+  String reqBody;
+  serializeJson(reqDoc, reqBody);
+
+  int httpCode = http.POST(reqBody);
+  bool success = false;
+
+  if (httpCode == HTTP_CODE_OK || httpCode == 201) {
+    String resBody = http.getString();
+    StaticJsonDocument<512> resDoc;
+    DeserializationError err = deserializeJson(resDoc, resBody);
+    if (!err && resDoc["success"].as<bool>()) {
+      success = true;
+      Serial.println("[API] Dispense transaction successfully completed and saved.");
+    }
+  } else {
+    Serial.printf("[API] Complete Dispense Failed (HTTP %d)\n", httpCode);
   }
 
   http.end();
@@ -339,20 +445,21 @@ void loop() {
   buzzerBeep(80);
   delay(2000);
 
-  // Step 3: Display Dynamic Rice & Oil Quotas from MongoDB
-  char riceLine[17];
-  char oilLine[17];
-  if (currentRiceQuota == (int)currentRiceQuota) {
-    snprintf(riceLine, sizeof(riceLine), "Rice: %d KG", (int)currentRiceQuota);
-  } else {
-    snprintf(riceLine, sizeof(riceLine), "Rice: %.1f KG", currentRiceQuota);
+  // Zero-Quota / Unallocated check
+  if (currentRiceQuota <= 0.0f && currentOilQuota <= 0.0f) {
+    Serial.println("[SRM] Beneficiary has 0 allocated quota. Dispensing disallowed.");
+    updateLcd("No Quota Alloc.", "Cannot Dispense");
+    buzzerBeep(300);
+    delay(3000);
+    updateLcd("Smart Ration Sys", "Tap RFID Card");
+    return;
   }
 
-  if (currentOilQuota == (int)currentOilQuota) {
-    snprintf(oilLine, sizeof(oilLine), "Oil: %d L", (int)currentOilQuota);
-  } else {
-    snprintf(oilLine, sizeof(oilLine), "Oil: %.1f L", currentOilQuota);
-  }
+  // Step 3: Display Dynamic Rice & Oil Quotas from MongoDB (decimal precision preserved)
+  char riceLine[17];
+  char oilLine[17];
+  formatQuotaString(riceLine, sizeof(riceLine), "Rice", currentRiceQuota, "KG");
+  formatQuotaString(oilLine, sizeof(oilLine), "Oil", currentOilQuota, "L");
   updateLcd(String(riceLine), String(oilLine));
   buzzerBeep(80);
   delay(2500);

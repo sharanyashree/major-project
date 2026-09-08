@@ -228,8 +228,10 @@ async function runStage3DistributorTests() {
       todayTxnRes.status === 200 && todayTxnRes.body.data.length >= 1
     );
 
+    const currentMonthName = new Date().toLocaleString('en-US', { month: 'long' });
+    const currentYearVal = new Date().getFullYear();
     const monthlyTxnRes = await request(app)
-      .get('/api/distributor/transactions/monthly?month=August&year=2026')
+      .get(`/api/distributor/transactions/monthly?month=${currentMonthName}&year=${currentYearVal}`)
       .set('Authorization', authHeader);
     assert(
       '10. Get Monthly Transactions',

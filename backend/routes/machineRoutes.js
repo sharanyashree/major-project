@@ -27,6 +27,7 @@ router.post('/verify-otp', verifyOtp);
 router.post('/check-allocation', checkAllocation);
 
 // 5. Dispense Validation
+router.post('/validate-dispense', validateDispense);
 router.post('/dispense', validateDispense);
 
 // 6. Complete Transaction

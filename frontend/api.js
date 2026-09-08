@@ -67,6 +67,7 @@ export const authStorage = {
 
   clearSession() {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    sessionStorage.clear();
   },
 
   isAuthenticated() {

@@ -307,8 +307,8 @@ async function runStage5E2ETests() {
     // WORKFLOW 8: DISTRIBUTOR BENEFICIARY MANAGEMENT & SEARCH
     // =========================================================================
     console.log('\n--- 8. DISTRIBUTOR BENEFICIARY MANAGEMENT WORKFLOW ---');
-    // Assign Beneficiary 1 to Distributor 1
-    await Beneficiary.findByIdAndUpdate(benInDb._id, { assignedDistributor: distInDb._id });
+    // Assign Beneficiary 1 to Distributor 1 and approve
+    await Beneficiary.findByIdAndUpdate(benInDb._id, { assignedDistributor: distInDb._id, status: 'Active' });
 
     // Create a 2nd Distributor for data isolation verification
     const hashedDist2Password = await bcrypt.hash('dist2Pass', 10);

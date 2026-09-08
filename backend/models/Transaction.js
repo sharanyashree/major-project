@@ -48,6 +48,11 @@ const transactionSchema = new mongoose.Schema(
       enum: ['Successful', 'Failed', 'Pending'],
       default: 'Successful',
     },
+    requestId: {
+      type: String,
+      sparse: true,
+      trim: true,
+    },
   },
   {
     timestamps: true,
